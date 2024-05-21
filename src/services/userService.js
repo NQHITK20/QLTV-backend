@@ -20,7 +20,6 @@ let hashUserPassword = (password) => {
     })
 }
 
-
 let createUser = (data) =>{
     return new Promise(async (resolve, reject) => {
         try {
@@ -28,7 +27,7 @@ let createUser = (data) =>{
             if (check === true) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Email đã tồn tại.Vui lòng chọn email khác.'
+                    errMessage: 'Email này đã được sử dụng.Vui lòng chọn email khác.'
                 });
             }else{
                 let hashPasswordFromBcrypt = await hashUserPassword(data.password);
@@ -37,7 +36,6 @@ let createUser = (data) =>{
                     lastName: data.lastName,
                     email: data.email,
                     password: hashPasswordFromBcrypt,
-                    confirmPassword: hashPasswordFromBcrypt,
                     roleId: data.roleId,
                     nationalId: data.nationalId,
                     avatar: data.avatar,
@@ -77,7 +75,7 @@ let getAllUser = () => {
         try {
             let data = await db.User.findAll({
                 attributes: {
-                    exclude: ['password','confirmPassword']
+                    exclude: ['password']
                 }
             })
             if (data) {
@@ -108,7 +106,7 @@ let getUser = (id) => {
             let data = await db.User.findOne({
                 where: { id: id },
                 attributes: {
-                    exclude: ['password','confirmPassword']
+                    exclude: ['password']
                 }
             })
             if (data) {
@@ -145,10 +143,7 @@ let handleUserLogin = (email, password) => {
                     let check = bcrypt.compareSync(password, user.password);
                     if (check) {
                         // Tạo JWT
-                        let token = jwt.sign({ email: email }, 'ahoe2k1', { expiresIn: '1h' });
                         userData.errCode = 0;
-                        userData.token = token;
-
                         // Xóa mật khẩu trước khi trả về dữ liệu người dùng
                         delete user.password;
                         userData.user = user;
@@ -158,13 +153,13 @@ let handleUserLogin = (email, password) => {
                     }
                 } else {
                     userData.errCode = 2;
-                    userData.errMessage = `Email không tồn tại. Vui lòng thử lại`;
+                    userData.errMessage = `Email này chưa được sử dụng. Vui lòng thử lại`;
                 }
                 resolve(userData)
             } else {
                 //return err
                 userData.errCode = 1;
-                userData.errMessage = `Email không tồn tại. Vui lòng thử lại`
+                userData.errMessage = `Email này chưa được sử dụng. Vui lòng thử lại`
                 resolve(userData)
             }
         } catch (e) {
@@ -187,9 +182,6 @@ let editUser = (data) => {
                     user.nationalId = data.nationalId
                     user.phonenumber = data.phonenumber
                     user.address = data.address
-                    // if (data.avatar) {
-                    //     user.image = data.avatar
-                    // }
                     await user.save();
                     resolve({
                         errCode: 0,
@@ -227,7 +219,6 @@ let deleteUser = (userId) => {
         } catch (error) {
             reject(error)
         }
-
     })
 }
 let exportDataUser = async () => {
@@ -235,13 +226,17 @@ let exportDataUser = async () => {
       // Lấy dữ liệu từ cơ sở dữ liệu
       let data = await db.User.findAll({
         attributes: {
-            exclude: ['password','confirmPassword']
+            exclude: ['password']
         }
     })
     if (data) {        
       // Tạo workbook Excel
       const workbook = new exceljs.Workbook();
       const worksheet = workbook.addWorksheet('Data');
+
+      // Lấy tên cột từ model (hoặc bạn có thể xác định tên cột thủ công)
+      const columns = Object.keys(data[0]);
+      worksheet.addRow(columns);
   
       // Thêm dữ liệu từ kết quả truy vấn vào worksheet
       data.forEach(row => {
@@ -249,7 +244,7 @@ let exportDataUser = async () => {
         worksheet.addRow(rowData);
       });
       
-  
+      
       // Trả về buffer chứa dữ liệu workbook
       return await workbook.xlsx.writeBuffer();
     } else {
@@ -260,12 +255,55 @@ let exportDataUser = async () => {
     }
     } catch (error) {
       console.error('Có lỗi khi xử lý yêu cầu:', error);
-      throw new Error('Đã xảy ra lỗi khi xử lý yêu cầu.');
     }
-  };
-
+};
+let requestResetEmail = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            // Cập nhật mật khẩu trong cơ sở dữ liệu
+            let user = await db.User.findOne({
+                where: { id: data.id },
+                raw: false
+            })
+            if (user) {
+                user.password = await hashUserPassword(data.password);
+                await user.save();
+                resolve({
+                    errCode: 0,
+                })
+            }else{
+                resolve({
+                    errCode: 1,
+                    errMessage:"Lỗi sever . Vui lòng thử lại sau"
+                }) 
+            }
+        } catch (error) {
+            reject(error)
+        }
+    })
+}
+let getCount = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let countUser = await db.User.count()
+            console.log('check count',countUser)
+            if (countUser) {
+                resolve({
+                    countUser:countUser
+                })
+            } else {
+                resolve({
+                    errCode:1,
+                    errMessage:"Lỗi sever"
+                })
+            }
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
 
 module.exports= {
-    createUser,hashUserPassword,checkUserEmail,getAllUser,
-    handleUserLogin,getUser,editUser,deleteUser,exportDataUser
+    createUser,hashUserPassword,checkUserEmail,getAllUser,requestResetEmail,
+    handleUserLogin,getUser,editUser,deleteUser,exportDataUser,getCount
 }

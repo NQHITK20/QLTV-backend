@@ -1,0 +1,29 @@
+import bookService from "../services/bookService"
+
+let createBook = async (req, res) => {
+    try {
+        let data = await bookService.createBook(req.body)
+        return res.status(200).json(data)
+    } catch (error) {
+        console.log(error)
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Lỗi từ sever'
+        })
+    }
+}
+let getAllCategory = async (req, res) => {
+    try {
+        let data = await bookService.getAllCategory()
+        return res.status(200).json(data)
+    } catch (error) {
+        console.log(error)
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Lỗi từ sever'
+        })
+    }
+}
+module.exports = {
+    createBook,getAllCategory
+}

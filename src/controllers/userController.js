@@ -1,6 +1,19 @@
 import userService from "../services/userService"
-import exceljs from 'exceljs';
+import emailService from "../services/emailService"
 
+
+let getCount = async (req, res) => {
+    try {
+        let data = await userService.getCount()
+        return res.status(200).json(data)
+    } catch (error) {
+        console.log(error)
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Lỗi từ sever'
+        })
+    }
+}
 let createUser = async (req, res) => {
     try {
         let data = await userService.createUser(req.body)
@@ -91,12 +104,29 @@ let exportDataUser = async (req, res) => {
       // Lấy dữ liệu từ service
       let message = await userService.exportDataUser()
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      res.setHeader('Content-Disposition', 'attachment; filename=data.xlsx');
-      res.send(message);
+      res.setHeader('Content-Disposition', 'attachment; filename=DuLieuNguoiDung.xlsx');
+      return res.status(200).send(message)
+    } catch (error) {
+      console.error('Có lỗi khi xử lý yêu cầu:', error);
+    }
+  };
+
+let sendResetEmail = async (req, res) => {
+    try {
+      // Lấy dữ liệu từ service
+      let message = await emailService.sendResetEmail(req.body)
       return res.status(200).json(message)
     } catch (error) {
       console.error('Có lỗi khi xử lý yêu cầu:', error);
-      res.status(500).send('Đã xảy ra lỗi khi xử lý yêu cầu.');
+    }
+  };
+let requestResetEmail = async (req, res) => {
+    try {
+      // Lấy dữ liệu từ service
+      let message = await userService.requestResetEmail(req.body)
+      return res.status(200).json(message)
+    } catch (error) {
+      console.error('Có lỗi khi xử lý yêu cầu:', error);
     }
   };
   
@@ -104,6 +134,6 @@ let exportDataUser = async (req, res) => {
 
 
 module.exports = {
-    createUser,getAllUser,deleteUser,
-    handleLogin,getUser,editUser,exportDataUser
+    createUser,getAllUser,deleteUser,sendResetEmail,requestResetEmail,
+    handleLogin,getUser,editUser,exportDataUser,getCount
 }
