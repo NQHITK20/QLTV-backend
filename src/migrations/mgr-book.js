@@ -29,7 +29,7 @@ module.exports = {
                 allowNull: false,
             },
             image: {
-                type: Sequelize.BLOB('long'),
+                type: Sequelize.STRING,
                 allowNull: false,
             },
             description: {

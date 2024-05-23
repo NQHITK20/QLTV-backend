@@ -1,38 +1,32 @@
 import { where } from "sequelize";
 import db from "../models/index";
 
-let generateRandomCode=(length)=> {
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let result = '';
-    for (let i = 0; i < length; i++) {
-        const randomIndex = Math.floor(Math.random() * characters.length);
-        result += characters.charAt(randomIndex);
-    }
-    return result;
-}
 
 let createBook = (data) =>{
     return new Promise(async (resolve, reject) => {
         try {
             let check = await db.Book.findOne({
-                where :{bookCode:data.bookCode}
+                where :{bookName:data.bookName}
             })
             if (check) {
                 resolve({
                     errCode: 1,
-                    errMessage: "Sách đã có trong kho.",
+                    errMessage: "Tên sách đã có trong kho.",
                 });   
             }
             else{
+                let cat = await db.Category.findOne({
+                    where:{id:data.category}
+                })
                 await db.Book.create({
                     bookName: data.bookName,
                     author: data.author,
-                    bookCode: generateRandomCode(6),
-                    category: data.category,
+                    bookCode: data.bookCode,
+                    category: cat.category,
                     soLuong: data.soLuong,
                     image: data.image,
                     description: data.description,
-                })
+                }),
                 resolve({
                     errCode: 0,
                 });
@@ -63,8 +57,52 @@ let getAllCategory = () => {
         }
     })
 }
+let getAllBook = (id) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!id) {
+                resolve({
+                    errCode:2,
+                    errMessage:"bug sever không nhận được id truyền 1 hay nhiều"
+                })
+            }
+            if (id=="ALL") {
+                let data = await db.Book.findAll({
+                })
+                if (data) {
+                    resolve({
+                        data
+                    })
+                } else {
+                    resolve({
+                        errCode:1,
+                        errMessage:"bug sever ko load đc data"
+                    })
+                } 
+            }else{
+                let data = await db.Book.findOne({
+                    where:{id:id}
+                })
+                if (data) {
+                    resolve({
+                        data
+                    })
+                } else {
+                    resolve({
+                        errCode:3,
+                        errMessage:"không tìm thấy data của id"
+                    })
+                } 
+            }
+
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
 
 
 module.exports = {
-    createBook,generateRandomCode,getAllCategory
+    createBook,getAllCategory,getAllBook
 }

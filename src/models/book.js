@@ -19,7 +19,7 @@ module.exports = (sequelize, DataTypes) => {
     bookCode: DataTypes.STRING,
     category: DataTypes.STRING,
     soLuong:DataTypes.INTEGER,
-    image: DataTypes.BLOB('long'),
+    image: DataTypes.STRING,
     description: DataTypes.STRING,
     }, {
         sequelize,

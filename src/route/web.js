@@ -19,6 +19,7 @@ let initWebRoutes = (app) => {
     //Book
     Router.post('/api/create-new-book', bookController.createBook);
     Router.get('/api/get-all-category', bookController.getAllCategory);
+    Router.post('/api/get-all-book', bookController.getAllBook);
     
 
     

@@ -286,7 +286,6 @@ let getCount = () => {
     return new Promise(async (resolve, reject) => {
         try {
             let countUser = await db.User.count()
-            console.log('check count',countUser)
             if (countUser) {
                 resolve({
                     countUser:countUser

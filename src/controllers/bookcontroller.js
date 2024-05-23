@@ -24,6 +24,18 @@ let getAllCategory = async (req, res) => {
         })
     }
 }
+let getAllBook = async (req, res) => {
+    try {
+        let data = await bookService.getAllBook(req.body.id)
+        return res.status(200).json(data)
+    } catch (error) {
+        console.log(error)
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Lỗi từ sever'
+        })
+    }
+}
 module.exports = {
-    createBook,getAllCategory
+    createBook,getAllCategory,getAllBook
 }
