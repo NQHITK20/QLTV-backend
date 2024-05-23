@@ -18,7 +18,7 @@ initWebRoute(app);
 
 connectDB();
 
-let port = 8000;
+let port = "https://qltv-backend.vercel.app/";
 app.listen(port, () => {
     console.log("Backend nodejs is running on port", +port);
 });
