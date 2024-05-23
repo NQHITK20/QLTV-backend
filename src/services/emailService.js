@@ -1,7 +1,7 @@
 'use strict'
 require('dotenv').config()
-import db from "../models";
-import nodemailer from 'nodemailer'
+const db = require('../models');
+const nodemailer = require('nodemailer');
 
 
 let sendResetEmail = async (data) => {

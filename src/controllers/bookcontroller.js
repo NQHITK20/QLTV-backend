@@ -36,6 +36,6 @@ let getAllBook = async (req, res) => {
         })
     }
 }
-module.exports = {
+export default {
     createBook,getAllCategory,getAllBook
 }

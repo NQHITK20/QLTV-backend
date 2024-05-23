@@ -1,7 +1,7 @@
 import { first, last } from "lodash";
-import db from "../models/index";
-import bcrypt from 'bcryptjs'
-import exceljs from 'exceljs';
+const db = require('../models');
+const bcrypt = require('bcryptjs');
+const exceljs = require('exceljs');
 
 
 const jwt = require('jsonwebtoken');

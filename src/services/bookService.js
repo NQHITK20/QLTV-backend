@@ -1,5 +1,5 @@
 import { where } from "sequelize";
-import db from "../models/index";
+const db = require('../models');
 
 
 let createBook = (data) =>{
