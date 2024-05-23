@@ -3,7 +3,7 @@ import userController from "../controllers/userController"
 import bookController from "../controllers/bookcontroller"
 let Router = express.Router();
 
-let initWebRoutes = (app) => {
+let initWebRoute = (app) => {
     //Các yêu cầu user
     Router.post('/api/create-new-user', userController.createUser);
     Router.get('/api/get-all-user', userController.getAllUser);
@@ -28,4 +28,4 @@ let initWebRoutes = (app) => {
     return app.use("/",Router)
 }
 
-module.exports = initWebRoutes;
+module.exports = initWebRoute;
