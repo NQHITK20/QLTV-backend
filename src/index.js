@@ -51,7 +51,7 @@ initWebRoute(app);
 connectDB();
 
 // Lắng nghe các kết nối tới cổng PORT hoặc cổng mặc định 8000
-const port = process.env.PORT || 8000;
+const port = process.env.PORT || 3306;
 app.listen(port, () => {
   console.log(`Backend nodejs is running on port ${port}`);
 });
