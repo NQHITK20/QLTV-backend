@@ -14,15 +14,15 @@
   "test": {
     "username": "root",
     "password": null,
-    "database": "database_test",
+    "database": "qltv",
     "host": "127.0.0.1",
     "dialect": "mysql"
   },
   "production": {
-    "username": "root",
-    "password": null,
-    "database": "test2",
-    "host": "127.0.0.1",
+    "username": "sql12708809",
+    "password": "fg8S4FwlcU",
+    "database": "sql12708809",
+    "host": "sql12.freesqldatabase.com",
     "dialect": "mysql"
   }
 }
