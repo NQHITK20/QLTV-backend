@@ -17,7 +17,13 @@ const sequelize = new Sequelize(
     dialect: 'mysql',
     dialectModule: mysql2, // Sử dụng mysql2 module cho Sequelize
     host: process.env.DB_HOST,
-    port: process.env.DB_PORT // Sử dụng biến môi trường DB_PORT
+    port: process.env.DB_PORT, // Sử dụng biến môi trường DB_PORT
+    pool: {
+      max: parseInt(process.env.DB_POOL_MAX) || 10,
+      min: parseInt(process.env.DB_POOL_MIN) || 0,
+      acquire: parseInt(process.env.DB_POOL_ACQUIRE) || 30000,
+      idle: parseInt(process.env.DB_POOL_IDLE) || 10000
+    }
   }
 );
 
