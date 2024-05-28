@@ -1,8 +1,8 @@
 const { Sequelize } = require('sequelize');
 
 // Lấy thông tin kết nối từ biến môi trường
-const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASSWORD, {
-    host: process.env.DB_HOST,
+const sequelize = new Sequelize('test', 'root', null, {
+    host: 'localhost',
     dialect: 'mysql',
     logging: false
 });
