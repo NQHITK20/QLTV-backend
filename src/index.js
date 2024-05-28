@@ -4,8 +4,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const initWebRoute = require('./route/web');
-const connectDB = require('./config/connectDB');
-const cors = require('cors');
 const Sequelize = require('sequelize');
 const mysql2 = require('mysql2');
 require('dotenv').config();
@@ -30,6 +28,7 @@ async function connectToDatabase() {
     await sequelize.authenticate();
     await sequelize.sync(); // Đồng bộ hóa Sequelize với database
     console.log('=> Created a new connection.');
+    return true;
   } catch (error) {
     console.error('Unable to connect to the database:', error);
     throw error;
@@ -40,20 +39,30 @@ async function connectToDatabase() {
 const app = express();
 
 // Sử dụng middleware để kích hoạt CORS và xử lý body của request
-app.use(cors());
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
-// Khởi tạo các route của ứng dụng
-initWebRoute(app);
+// Kết nối tới cơ sở dữ liệu và sau đó khởi tạo các route của ứng dụng
+connectToDatabase().then(() => {
+  // Sử dụng middleware CORS sau khi kết nối tới cơ sở dữ liệu thành công
+  const corsOptions = {
+    origin: '*',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    preflightContinue: false,
+    optionsSuccessStatus: 204
+  };
+  app.use(cors(corsOptions));
 
-// Kết nối tới cơ sở dữ liệu
-connectDB();
+  // Khởi tạo các route của ứng dụng sau khi kết nối tới cơ sở dữ liệu thành công
+  initWebRoute(app);
 
-// Lắng nghe các kết nối tới cổng PORT hoặc cổng mặc định 8000
-const port = process.env.PORT || 3306;
-app.listen(port, () => {
-  console.log(`Backend nodejs is running on port ${port}`);
+  // Lắng nghe các kết nối tới cổng PORT hoặc cổng mặc định 8000
+  const port = process.env.PORT || 3306;
+  app.listen(port, () => {
+    console.log(`Backend nodejs is running on port ${port}`);
+  });
+}).catch(error => {
+  console.error('Failed to start the server:', error);
 });
 
 // Xuất khẩu ứng dụng Express để sử dụng trong các test hoặc mục đích khác
