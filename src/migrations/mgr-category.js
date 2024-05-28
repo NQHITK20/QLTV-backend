@@ -1,14 +1,15 @@
 'use strict';
+
 module.exports = {
     up: async (queryInterface, Sequelize) => {
-        await queryInterface.createTable('category', {
+        await queryInterface.createTable('categories', { // Đổi tên bảng thành 'Category' thay vì 'categories'
             id: {
                 allowNull: false,
                 autoIncrement: true,
                 primaryKey: true,
                 type: Sequelize.INTEGER
             },
-            categories: {
+            category: { // Đổi tên cột từ 'category' thành 'categories'
                 type: Sequelize.STRING,
                 allowNull: false,
             },
@@ -28,9 +29,11 @@ module.exports = {
                 allowNull: true,
                 type: Sequelize.DATE
             }
+        }, {
+            freezeTableName: true // Giữ nguyên tên bảng, không chuyển đổi
         });
     },
     down: async (queryInterface, Sequelize) => {
-        await queryInterface.dropTable('category');
+        await queryInterface.dropTable('categories');
     }
 };

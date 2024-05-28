@@ -1,27 +1,24 @@
+// Import thư viện dotenv và cấu hình
+require('dotenv').config();
+
 const { Sequelize } = require('sequelize');
 
-// Lấy thông tin kết nối từ biến môi trường
+// Lấy các biến môi trường từ file .env
 const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASSWORD, {
     host: process.env.DB_HOST,
     dialect: 'mysql',
-    logging: false, // Disable logging in production for performance and security reasons
+    logging: false,
     pool: {
-        max: 10, // Maximum number of connections in pool
-        min: 0,  // Minimum number of connections in pool
-        acquire: 30000, // Maximum time (in ms) that pool will try to get connection before throwing error
-        idle: 10000   // Maximum time (in ms) that a connection can be idle before being released
-    },
-    dialectOptions: {
-        ssl: {
-            require: true, // If your database requires SSL
-            rejectUnauthorized: false // Adjust based on your security requirements
-        }
+        max: parseInt(process.env.DB_POOL_MAX) || 10,
+        min: parseInt(process.env.DB_POOL_MIN) || 0,
+        acquire: parseInt(process.env.DB_POOL_ACQUIRE) || 30000,
+        idle: parseInt(process.env.DB_POOL_IDLE) || 10000
     }
 });
 
-let connectDB = async () => {
+// Kiểm tra kết nối đến cơ sở dữ liệu
+async function connectDB() {
     try {
-        // Kiểm tra kết nối đến cơ sở dữ liệu
         await sequelize.authenticate();
         console.log('Connection has been established successfully.');
     } catch (error) {
@@ -29,4 +26,8 @@ let connectDB = async () => {
     }
 }
 
-module.exports = connectDB;
+// Gọi hàm connectDB để kết nối đến cơ sở dữ liệu khi ứng dụng khởi động
+connectDB();
+
+// Export sequelize để có thể sử dụng trong các module khác
+module.exports = sequelize;
