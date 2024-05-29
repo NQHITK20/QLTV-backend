@@ -29,12 +29,8 @@ const sequelize = new Sequelize(
   process.env.DB_PASSWORD,
   {
     dialect: 'mysql',
+    dialectModule: mysql2, // Sử dụng mysql2 module cho Sequelize
     host: process.env.DB_HOST,
-    dialectOptions: {
-      ssl: {
-        rejectUnauthorized: false // Chỉ cần thiết nếu bạn không có chứng chỉ xác thực
-      }
-    },
     port: process.env.DB_PORT, // Sử dụng biến môi trường DB_PORT
     pool: {
       max: parseInt(process.env.DB_POOL_MAX) || 10,
@@ -50,6 +46,7 @@ async function connectToDatabase() {
   console.log('Trying to connect via Sequelize...');
   try {
     await sequelize.authenticate();
+    await sequelize.sync(); // Đồng bộ hóa Sequelize với database
     console.log('=> Created a new connection.');
     return true;
   } catch (error) {
