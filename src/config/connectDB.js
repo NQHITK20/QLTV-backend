@@ -11,9 +11,8 @@ require('dotenv').config();
 //     '',         // Mật khẩu MySQL
 //     {
 //       dialect: 'mysql',
-//       dialectModule: mysql2, // Sử dụng mysql2 module cho Sequelize
 //       host: 'localhost',     // Địa chỉ host của MySQL
-//       port: 3306,             // Cổng của MySQL
+//       port: 3307,             // Cổng của MySQL
 //       pool: {
 //         max: 10,
 //         min: 0,
