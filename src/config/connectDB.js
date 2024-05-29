@@ -1,33 +1,40 @@
-// Import thư viện dotenv và cấu hình
+'use strict';
+
+const Sequelize = require('sequelize');
+const mysql2 = require('mysql2');
 require('dotenv').config();
 
-const { Sequelize } = require('sequelize');
-
-// Lấy các biến môi trường từ file .env
-const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASSWORD, {
-    host: process.env.DB_HOST,
+// Khởi tạo đối tượng Sequelize cho kết nối database
+const sequelize = new Sequelize(
+  process.env.DB_NAME,
+  process.env.DB_USER,
+  process.env.DB_PASSWORD,
+  {
     dialect: 'mysql',
-    logging: false,
+    dialectModule: mysql2, // Sử dụng mysql2 module cho Sequelize
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT, // Sử dụng biến môi trường DB_PORT
     pool: {
-        max: parseInt(process.env.DB_POOL_MAX) || 10,
-        min: parseInt(process.env.DB_POOL_MIN) || 0,
-        acquire: parseInt(process.env.DB_POOL_ACQUIRE) || 30000,
-        idle: parseInt(process.env.DB_POOL_IDLE) || 10000
+      max: parseInt(process.env.DB_POOL_MAX) || 10,
+      min: parseInt(process.env.DB_POOL_MIN) || 0,
+      acquire: parseInt(process.env.DB_POOL_ACQUIRE) || 30000,
+      idle: parseInt(process.env.DB_POOL_IDLE) || 10000
     }
-});
+  }
+);
 
-// Kiểm tra kết nối đến cơ sở dữ liệu
-async function connectDB() {
-    try {
-        await sequelize.authenticate();
-        console.log('Connection has been established successfully.');
-    } catch (error) {
-        console.error('Unable to connect to the database:', error);
-    }
+// Hàm kết nối tới cơ sở dữ liệu và đồng bộ hóa Sequelize
+async function connectToDatabase() {
+  console.log('Trying to connect via Sequelize...');
+  try {
+    await sequelize.authenticate();
+    await sequelize.sync(); // Đồng bộ hóa Sequelize với database
+    console.log('=> Created a new connection.');
+    return true;
+  } catch (error) {
+    console.error('Unable to connect to the database:', error);
+    throw error;
+  }
 }
 
-// Gọi hàm connectDB để kết nối đến cơ sở dữ liệu khi ứng dụng khởi động
-connectDB();
-
-// Export sequelize để có thể sử dụng trong các module khác
-module.exports = sequelize;
+module.exports = connectToDatabase;
