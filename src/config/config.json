@@ -17,13 +17,13 @@
     "database": "qltv",
     "host": "127.0.0.1",
     "dialect": "mysql"
+
   },
   "production": {
     "username": "sql12708809",
     "password": "fg8S4FwlcU",
     "database": "sql12708809",
     "host": "sql12.freesqldatabase.com",
-    "dialect": "mysql",
-    "dialectModule": "mysql2"
+    "dialect": "mysql"
   }
 }

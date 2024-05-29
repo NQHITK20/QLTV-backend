@@ -4,6 +4,25 @@ const Sequelize = require('sequelize');
 const mysql2 = require('mysql2');
 require('dotenv').config();
 
+//Test
+// const sequelize = new Sequelize(
+//     'qltv',     // Tên database
+//     'root',     // Tên người dùng MySQL
+//     '',         // Mật khẩu MySQL
+//     {
+//       dialect: 'mysql',
+//       dialectModule: mysql2, // Sử dụng mysql2 module cho Sequelize
+//       host: 'localhost',     // Địa chỉ host của MySQL
+//       port: 3306,             // Cổng của MySQL
+//       pool: {
+//         max: 10,
+//         min: 0,
+//         acquire: 30000,
+//         idle: 10000
+//       }
+//     }
+//   );
+
 // Khởi tạo đối tượng Sequelize cho kết nối database
 const sequelize = new Sequelize(
   process.env.DB_NAME,
