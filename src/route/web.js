@@ -22,9 +22,6 @@ let initWebRoute = (app) => {
     Router.post('/api/get-all-book', bookController.getAllBook);
     
 
-    
-
-
     return app.use("/",Router)
 }
 
