@@ -23,6 +23,6 @@
     "password": "fg8S4FwlcU",
     "database": "sql12708809",
     "host": "sql12.freesqldatabase.com",
-    "dialect": "mysql2"
+    "dialect": "mysql"
   }
 }
