@@ -30,6 +30,11 @@ const sequelize = new Sequelize(
   {
     dialect: 'mysql',
     host: process.env.DB_HOST,
+    dialectOptions: {
+      ssl: {
+        rejectUnauthorized: false // Chỉ cần thiết nếu bạn không có chứng chỉ xác thực
+      }
+    },
     port: process.env.DB_PORT, // Sử dụng biến môi trường DB_PORT
     pool: {
       max: parseInt(process.env.DB_POOL_MAX) || 10,
