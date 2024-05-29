@@ -8,7 +8,7 @@ let initWebRoute = (app) => {
     //Các yêu cầu user
     Router.post('/api/create-new-user', userController.createUser);
     Router.get('/api/get-all-user', userController.getAllUser);
-    Router.post('/api/login', userController.handleLogin)
+    Router.post('/api/login', userController.handleLogin);
     Router.post('/api/get-user-by-id', userController.getUser);
     Router.post('/api/edit-user', userController.editUser);
     Router.delete('/api/delete-user', userController.deleteUser);
