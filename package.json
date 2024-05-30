@@ -5,7 +5,7 @@
   "require": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node src/index.js"
+    "start": "nodemon --exec babel-node src/index.js"
   },
   "keywords": [
     "backend"

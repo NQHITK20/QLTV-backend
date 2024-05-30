@@ -23,7 +23,7 @@ function initializeSequelize() {
         max: parseInt(process.env.DB_POOL_MAX) || 10,
         min: parseInt(process.env.DB_POOL_MIN) || 0,
         acquire: parseInt(process.env.DB_POOL_ACQUIRE) || 30000,
-        idle: parseInt(process.env.DB_POOL_IDLE) || 10000,
+        idle: parseInt(process.env.DB_POOL_IDLE) || 20000,
         evict: 15000,
       },
       dialectOptions: {
@@ -78,8 +78,10 @@ function connectWithRetry() {
   });
 }
 
+connectToDatabase();
 // Example usage
 connectWithRetry().catch(err => {
   console.error('Failed to connect after multiple retries:', err);
 });
+
 module.exports = connectToDatabase;
