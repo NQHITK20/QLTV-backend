@@ -7,12 +7,12 @@ const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, proces
   host: process.env.DB_HOST,
   dialect: 'mysql',
   dialectModule: require('mysql2'),
-  logging: true,
+  logging: false,
   pool: {
-    max: process.env.DB_POOL_MAX || 15,
-    min: process.env.DB_POOL_MIN || 5,
-    acquire: process.env.DB_POOL_ACQUIRE || 20000,
-    idle: process.env.DB_POOL_IDLE || 30000
+    max: parseInt(process.env.DB_POOL_MAX) || 15,
+    min: parseInt(process.env.DB_POOL_MIN) || 5,
+    acquire: parseInt(process.env.DB_POOL_ACQUIRE) || 20000,
+    idle: parseInt(process.env.DB_POOL_IDLE) || 30000
   }
 });
 let connectToDatabase = async () => {
