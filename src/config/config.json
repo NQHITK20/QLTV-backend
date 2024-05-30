@@ -24,7 +24,7 @@
     "password": "SMziuZ7Tkd",
     "database": "sql12710182",
     "host": "sql12.freesqldatabase.com",
-    "dialect": "mysql",
+    "dialect": "mysql2",
     "dialectModule": "mysql2",
     "logging": false
   }
