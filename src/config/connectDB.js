@@ -30,7 +30,7 @@ function initializeSequelize() {
         // Thêm các tùy chọn bổ sung nếu cần
         reconnect: true, // Tự động kết nối lại khi bị mất kết nối
         retryAttempts: 5, // Số lần thử lại khi kết nối thất bại
-        retryDelay: 3000 // Thời gian chờ giữa các lần thử lại (milliseconds)
+        retryDelay: 30000 // Thời gian chờ giữa các lần thử lại (milliseconds)
       }
     }
   );
@@ -63,7 +63,7 @@ async function connectWithRetry() {
     }
   }, {
     retries: 5, // Số lần thử lại
-    minTimeout: 1000, // Thời gian chờ tối thiểu giữa các lần thử lại (milliseconds)
+    minTimeout: 10000, // Thời gian chờ tối thiểu giữa các lần thử lại (milliseconds)
     onRetry: (err, attempt) => {
       console.log(`Retry attempt ${attempt}: ${err.message}`);
     }
