@@ -24,6 +24,9 @@
     "password": "SMziuZ7Tkd",
     "database": "sql12710182",
     "host": "sql12.freesqldatabase.com",
-    "dialect": "mysql"
+    "dialect": "mysql",
+    "dialectOptions": {
+      "connectTimeout": 60000
+    }
   }
 }
