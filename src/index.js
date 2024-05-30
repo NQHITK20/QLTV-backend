@@ -16,31 +16,32 @@ app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
 // Kết nối tới cơ sở dữ liệu và sau đó khởi tạo các route của ứng dụng
-(async () => {
-  try {
-    await connectToDatabase();
+app.use(function (req, res, next) {
 
-    // Sử dụng middleware CORS sau khi kết nối tới cơ sở dữ liệu thành công
-    const corsOptions = {
-      origin: '*',
-      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-      preflightContinue: false,
-      optionsSuccessStatus: 204
-    };
-    app.use(cors(corsOptions));
+  // Website you wish to allow to connect
+  res.setHeader('Access-Control-Allow-Origin', "*");
 
-    // Khởi tạo các route của ứng dụng sau khi kết nối tới cơ sở dữ liệu thành công
-    initWebRoute(app);
+  // Request methods you wish to allow
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
 
-    // Lắng nghe các kết nối tới cổng PORT hoặc cổng mặc định 8000
-    const port = process.env.PORT || 3306;
-    app.listen(port, () => {
-      console.log(`Backend nodejs is running on port ${port}`);
-    });
-  } catch (error) {
-    console.error('Failed to start the server:', error);
-  }
-})();
+  // Request headers you wish to allow
+  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+
+  // Set to true if you need the website to include cookies in the requests sent
+  // to the API (e.g. in case you use sessions)
+  res.setHeader('Access-Control-Allow-Credentials', true);
+
+  // Pass to next layer of middleware
+  next();
+});
+
+connectToDatabase();
+initWebRoute(app);
+let port = process.env.PORT;
+app.listen(port, () => {
+    // callback
+    console.log("Backend nodejs is running on port", +port);
+})
 
 
 // Xuất khẩu ứng dụng Express để sử dụng trong các test hoặc mục đích khác
