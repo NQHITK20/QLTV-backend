@@ -30,8 +30,8 @@ function initializeSequelize() {
         keepAlive: true,
         // Thêm các tùy chọn bổ sung nếu cần
         reconnect: true, // Tự động kết nối lại khi bị mất kết nối
-        // retryAttempts: 3, // Số lần thử lại khi kết nối thất bại
-        // retryDelay: 1000 // Thời gian chờ giữa các lần thử lại (milliseconds)
+        retryAttempts: 3, // Số lần thử lại khi kết nối thất bại
+        retryDelay: 1000 // Thời gian chờ giữa các lần thử lại (milliseconds)
       }
     }
   );
