@@ -1,13 +1,12 @@
 'use strict';
 
-import { Sequelize } from 'sequelize'; // Correct the import path if needed
+const { Sequelize } = require('sequelize'); // Correct the import path if needed
 require('dotenv').config();
 
 const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASSWORD, {
   host: process.env.DB_HOST,
   dialect: 'mysql',
   dialectModule: require('mysql2'),
-  logging: false,
   pool: {
     max: parseInt(process.env.DB_POOL_MAX) || 15,
     min: parseInt(process.env.DB_POOL_MIN) || 5,
