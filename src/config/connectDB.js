@@ -3,11 +3,12 @@
 const Sequelize = require('sequelize');
 const mysql2 = require('mysql2');
 const retry = require('async-retry');
+
 require('dotenv').config();
 
 let sequelize;
 
-// Khởi tạo đối tượng Sequelize cho kết nối database
+// Hàm khởi tạo Sequelize
 function initializeSequelize() {
   sequelize = new Sequelize(
     process.env.DB_NAME,
@@ -15,9 +16,9 @@ function initializeSequelize() {
     process.env.DB_PASSWORD,
     {
       dialect: 'mysql',
-      dialectModule: mysql2, // Sử dụng mysql2 module cho Sequelize
+      dialectModule: mysql2,
       host: process.env.DB_HOST,
-      port: process.env.DB_PORT, // Sử dụng biến môi trường DB_PORT
+      port: process.env.DB_PORT,
       pool: {
         max: parseInt(process.env.DB_POOL_MAX) || 10,
         min: parseInt(process.env.DB_POOL_MIN) || 0,
@@ -25,8 +26,12 @@ function initializeSequelize() {
         idle: parseInt(process.env.DB_POOL_IDLE) || 10000
       },
       dialectOptions: {
-        connectTimeout: 60000, // 60 seconds
-        keepAlive: true
+        connectTimeout: 60000, // 60 giây
+        keepAlive: true,
+        // Thêm các tùy chọn bổ sung nếu cần
+        reconnect: true, // Tự động kết nối lại khi bị mất kết nối
+        // retryAttempts: 3, // Số lần thử lại khi kết nối thất bại
+        // retryDelay: 1000 // Thời gian chờ giữa các lần thử lại (milliseconds)
       }
     }
   );
@@ -46,23 +51,27 @@ async function connectToDatabase() {
   }
 }
 
-// Hàm thử lại kết nối khi gặp lỗi
+// Hàm kết nối với thử lại
 async function connectWithRetry() {
   await retry(async () => {
+    initializeSequelize();
     try {
-      initializeSequelize(); // Khởi tạo lại đối tượng Sequelize
-      await connectToDatabase();
+      await sequelize.authenticate();
+      console.log('Kết nối đã được thiết lập thành công.');
     } catch (error) {
-      console.error('Retrying connection...', error);
+      console.error('Không thể kết nối tới cơ sở dữ liệu:', error);
       throw error;
     }
   }, {
-    retries: 5,     // Số lần thử lại
-    minTimeout: 1000 // Thời gian chờ tối thiểu giữa các lần thử lại
+    retries: 5, // Số lần thử lại
+    minTimeout: 1000, // Thời gian chờ tối thiểu giữa các lần thử lại (milliseconds)
+    onRetry: (err, attempt) => {
+      console.log(`Retry attempt ${attempt}: ${err.message}`);
+    }
   });
 }
 
-// Gọi hàm connectWithRetry để bắt đầu quá trình kết nối
+// Khởi động kết nối với thử lại
 connectWithRetry();
 
 module.exports = connectToDatabase;
