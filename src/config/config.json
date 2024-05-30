@@ -25,7 +25,6 @@
     "database": "sql12710182",
     "host": "sql12.freesqldatabase.com",
     "dialect": "mysql",
-    "dialectModule": "mysql2",
-    "logging": false
+    "dialectModule": "mysql2"
   }
 }
