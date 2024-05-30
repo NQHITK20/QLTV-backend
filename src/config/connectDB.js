@@ -1,6 +1,6 @@
 'use strict';
 
-const Sequelize = require('sequelize');
+import { Sequelize } from '../models';
 const mysql2 = require('mysql2');
 const retry = require('async-retry');
 
