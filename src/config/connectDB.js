@@ -41,7 +41,7 @@ function initializeSequelize() {
 async function connectToDatabase() {
   console.log('Trying to connect via Sequelize...');
   try {
-    await sequelize.authenticate();
+    await sequelize.initializeSequelize();
     await sequelize.sync(); // Đồng bộ hóa Sequelize với database
     console.log('=> Created a new connection.');
     return true;
@@ -56,7 +56,7 @@ function connectWithRetry() {
   return retry((bail, attempt) => {
     return new Promise((resolve, reject) => {
       initializeSequelize();
-      sequelize.authenticate()
+      sequelize.initializeSequelize()
         .then(() => {
           console.log('Kết nối đã được thiết lập thành công.');
           resolve();
