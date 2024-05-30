@@ -1,5 +1,5 @@
 'use strict';
-
+const fs = require('fs')
 const { Sequelize } = require('sequelize'); // Correct the import path if needed
 require('dotenv').config();
 const serverCa = [fs.readFileSync(certificatePath, 'utf8')]
