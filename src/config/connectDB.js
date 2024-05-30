@@ -26,7 +26,7 @@ function initializeSequelize() {
         evict: 15000,
       },
       dialectOptions: {
-        connectTimeout: 90000, // 60 giây
+        connectTimeout: 120000, // 120 giây
         reconnect: true, // Tự động kết nối lại khi bị mất kết nối
         retryAttempts: 5, // Số lần thử lại khi kết nối thất bại
         retryDelay: 30000 // Thời gian chờ giữa các lần thử lại (milliseconds)
@@ -39,7 +39,6 @@ function initializeSequelize() {
 async function connectToDatabase() {
   console.log('Trying to connect via Sequelize...');
   try {
-    initializeSequelize();
     await sequelize.authenticate();
     await sequelize.sync(); // Đồng bộ hóa Sequelize với database
     console.log('=> Created a new connection.');
@@ -68,12 +67,13 @@ async function connectWithRetry() {
     }
   }, {
     retries: 3, // Maximum retry 3 times
-    minTimeout: 3000, // Initial backoff duration in milliseconds
-    factor: 1.5, // Exponent to increase backoff each try
+    minTimeout: 5000, // Initial backoff duration in milliseconds
+    factor: 2, // Exponent to increase backoff each try
   });
 }
 
-// Example usage
+// Khởi tạo Sequelize và thử kết nối lại
+initializeSequelize();
 connectWithRetry().catch(err => {
   console.error('Failed to connect after multiple retries:', err);
 });
