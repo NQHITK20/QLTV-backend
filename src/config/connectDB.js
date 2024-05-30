@@ -2,6 +2,7 @@
 
 const { Sequelize } = require('sequelize'); // Correct the import path if needed
 require('dotenv').config();
+const serverCa = [fs.readFileSync(certificatePath, 'utf8')]
 
 const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASSWORD, {
   host: process.env.DB_HOST,
