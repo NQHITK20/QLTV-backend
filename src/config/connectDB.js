@@ -27,7 +27,6 @@ function initializeSequelize() {
       },
       dialectOptions: {
         connectTimeout: 60000, // 60 giây
-        keepAlive: true,
         // Thêm các tùy chọn bổ sung nếu cần
         reconnect: true, // Tự động kết nối lại khi bị mất kết nối
         retryAttempts: 3, // Số lần thử lại khi kết nối thất bại
