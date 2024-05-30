@@ -51,26 +51,34 @@ async function connectToDatabase() {
 }
 
 // Hàm kết nối với thử lại
-async function connectWithRetry() {
-  await retry(async () => {
-    initializeSequelize();
-    try {
-      await sequelize.authenticate();
-      console.log('Kết nối đã được thiết lập thành công.');
-    } catch (error) {
-      console.error('Không thể kết nối tới cơ sở dữ liệu:', error);
-      throw error;
-    }
+function connectWithRetry() {
+  return retry((bail, attempt) => {
+    return new Promise((resolve, reject) => {
+      initializeSequelize();
+      sequelize.authenticate()
+        .then(() => {
+          console.log('Kết nối đã được thiết lập thành công.');
+          resolve();
+        })
+        .catch(error => {
+          console.error('Không thể kết nối tới cơ sở dữ liệu:', error);
+          if (/Deadlock/i.test(error.message) || error instanceof Sequelize.ConnectionError) {
+            console.log(`Retry attempt ${attempt}: ${error.message}`);
+            reject(error);
+          } else {
+            bail(error); // Do not retry for other types of errors
+          }
+        });
+    });
   }, {
-    retries: 5, // Số lần thử lại
-    minTimeout: 10000, // Thời gian chờ tối thiểu giữa các lần thử lại (milliseconds)
-    onRetry: (err, attempt) => {
-      console.log(`Retry attempt ${attempt}: ${err.message}`);
-    }
+    retries: 3, // Maximum retry 3 times
+    minTimeout: 3000, // Initial backoff duration in milliseconds
+    factor: 1.5, // Exponent to increase backoff each try
   });
 }
 
-// Khởi động kết nối với thử lại
-connectWithRetry();
-
+// Example usage
+connectWithRetry().catch(err => {
+  console.error('Failed to connect after multiple retries:', err);
+});
 module.exports = connectToDatabase;
