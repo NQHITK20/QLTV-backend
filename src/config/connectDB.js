@@ -10,20 +10,20 @@ let sequelize;
 
 // Hàm khởi tạo Sequelize
 function initializeSequelize() {
-  sequelize = new Sequelize(
-    process.env.DB_NAME,
-    process.env.DB_USER,
-    process.env.DB_PASSWORD,
+  const sequelize = new Sequelize(
+    'sql12710182',  // DB_NAME
+    'sql12710182',  // DB_USER
+    'SMziuZ7Tkd',   // DB_PASSWORD
     {
       dialect: 'mysql',
       dialectModule: mysql2,
-      host: process.env.DB_HOST,
-      port: process.env.DB_PORT,
+      host: 'sql12.freesqldatabase.com',  // DB_HOST
+      port: 3307,  // PORT
       pool: {
-        max: parseInt(process.env.DB_POOL_MAX) || 10,
-        min: parseInt(process.env.DB_POOL_MIN) || 0,
-        acquire: parseInt(process.env.DB_POOL_ACQUIRE) || 30000,
-        idle: parseInt(process.env.DB_POOL_IDLE) || 10000
+        max: 30,  // DB_POOL_MAX
+        min: 0,   // DB_POOL_MIN
+        acquire: 90000,  // DB_POOL_ACQUIRE
+        idle: 10000  // DB_POOL_IDLE
       },
       dialectOptions: {
         connectTimeout: 90000, // 60 giây
@@ -35,6 +35,7 @@ function initializeSequelize() {
     }
   );
 }
+
 
 // Hàm kết nối tới cơ sở dữ liệu và đồng bộ hóa Sequelize
 async function connectToDatabase() {
