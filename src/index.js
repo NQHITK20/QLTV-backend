@@ -5,7 +5,6 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const initWebRoute = require('./route/web');
 const connectToDatabase = require('./config/connectDB');
-const cors = require('cors');
 require('dotenv').config();
 
 // Khởi tạo ứng dụng Express
