@@ -16,13 +16,15 @@ function initializeSequelize() {
     process.env.DB_PASSWORD,
     {
       dialect: 'mysql',
+      dialectModule: mysql2,
       host: process.env.DB_HOST,
       port: process.env.DB_PORT,
       pool: {
         max: parseInt(process.env.DB_POOL_MAX) || 10,
         min: parseInt(process.env.DB_POOL_MIN) || 0,
         acquire: parseInt(process.env.DB_POOL_ACQUIRE) || 30000,
-        idle: parseInt(process.env.DB_POOL_IDLE) || 10000
+        idle: parseInt(process.env.DB_POOL_IDLE) || 10000,
+        evict: 15000,
       },
       dialectOptions: {
         connectTimeout: 90000, // 60 giây
