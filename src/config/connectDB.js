@@ -26,11 +26,11 @@ function initializeSequelize() {
         idle: parseInt(process.env.DB_POOL_IDLE) || 10000
       },
       dialectOptions: {
-        connectTimeout: 60000, // 60 giây
+        connectTimeout: 90000, // 60 giây
         // Thêm các tùy chọn bổ sung nếu cần
         reconnect: true, // Tự động kết nối lại khi bị mất kết nối
-        retryAttempts: 3, // Số lần thử lại khi kết nối thất bại
-        retryDelay: 1000 // Thời gian chờ giữa các lần thử lại (milliseconds)
+        retryAttempts: 5, // Số lần thử lại khi kết nối thất bại
+        retryDelay: 3000 // Thời gian chờ giữa các lần thử lại (milliseconds)
       }
     }
   );
