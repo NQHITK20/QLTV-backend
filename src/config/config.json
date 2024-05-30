@@ -1,10 +1,31 @@
 {
+  "development": {
+    "username": "root",
+    "password": null,
+    "database": "qltv",
+    "host": "127.0.0.1",
+    "dialect": "mysql",
+    "logging": false,
+    "query": {
+      "raw": true
+    },
+    "timezone": "+07:00"
+  },
+  "test": {
+    "username": "root",
+    "password": null,
+    "database": "qltv",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
+
+  },
   "production": {
     "username": "sql12710182",
     "password": "SMziuZ7Tkd",
     "database": "sql12710182",
     "host": "sql12.freesqldatabase.com",
     "dialect": "mysql",
-    "dialectModule": "mysql2"
+    "dialectModule": "mysql2",
+    "logging": false
   }
 }
