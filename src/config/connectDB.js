@@ -3,49 +3,34 @@
 const Sequelize = require('sequelize');
 const mysql2 = require('mysql2');
 const retry = require('async-retry');
-
 require('dotenv').config();
 
-//Test
-// const sequelize = new Sequelize(
-//     'qltv',     // Tên database
-//     'root',     // Tên người dùng MySQL
-//     '',         // Mật khẩu MySQL
-//     {
-//       dialect: 'mysql',
-//       host: 'localhost',     // Địa chỉ host của MySQL
-//       port: 3307,             // Cổng của MySQL
-//       pool: {
-//         max: 10,
-//         min: 0,
-//         acquire: 30000,
-//         idle: 10000
-//       }
-//     }
-//   );
+let sequelize;
 
 // Khởi tạo đối tượng Sequelize cho kết nối database
-const sequelize = new Sequelize(
-  process.env.DB_NAME,
-  process.env.DB_USER,
-  process.env.DB_PASSWORD,
-  {
-    dialect: 'mysql',
-    dialectModule: mysql2, // Sử dụng mysql2 module cho Sequelize
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT, // Sử dụng biến môi trường DB_PORT
-    pool: {
-      max: parseInt(process.env.DB_POOL_MAX) || 10,
-      min: parseInt(process.env.DB_POOL_MIN) || 0,
-      acquire: parseInt(process.env.DB_POOL_ACQUIRE) || 30000,
-      idle: parseInt(process.env.DB_POOL_IDLE) || 10000
-    },
-    dialectOptions: {
-    connectTimeout: 60000, // 60 seconds
-    keepAlive: true
-  }
-  }
-);
+function initializeSequelize() {
+  sequelize = new Sequelize(
+    process.env.DB_NAME,
+    process.env.DB_USER,
+    process.env.DB_PASSWORD,
+    {
+      dialect: 'mysql',
+      dialectModule: mysql2, // Sử dụng mysql2 module cho Sequelize
+      host: process.env.DB_HOST,
+      port: process.env.DB_PORT, // Sử dụng biến môi trường DB_PORT
+      pool: {
+        max: parseInt(process.env.DB_POOL_MAX) || 10,
+        min: parseInt(process.env.DB_POOL_MIN) || 0,
+        acquire: parseInt(process.env.DB_POOL_ACQUIRE) || 30000,
+        idle: parseInt(process.env.DB_POOL_IDLE) || 10000
+      },
+      dialectOptions: {
+        connectTimeout: 60000, // 60 seconds
+        keepAlive: true
+      }
+    }
+  );
+}
 
 // Hàm kết nối tới cơ sở dữ liệu và đồng bộ hóa Sequelize
 async function connectToDatabase() {
@@ -61,28 +46,14 @@ async function connectToDatabase() {
   }
 }
 
+// Hàm thử lại kết nối khi gặp lỗi
 async function connectWithRetry() {
   await retry(async () => {
-    const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASSWORD, {
-      host: process.env.DB_HOST,
-      dialect: 'mysql',
-      dialectOptions: {
-        connectTimeout: 60000, // 60 giây
-        keepAlive: true
-      },
-      pool: {
-        max: 10,
-        min: 0,
-        acquire: 60000, // 60 giây
-        idle: 10000     // 10 giây
-      }
-    });
-
     try {
-      await sequelize.authenticate();
-      console.log('Kết nối đã được thiết lập thành công.');
+      initializeSequelize(); // Khởi tạo lại đối tượng Sequelize
+      await connectToDatabase();
     } catch (error) {
-      console.error('Không thể kết nối tới cơ sở dữ liệu:', error);
+      console.error('Retrying connection...', error);
       throw error;
     }
   }, {
@@ -91,6 +62,7 @@ async function connectWithRetry() {
   });
 }
 
+// Gọi hàm connectWithRetry để bắt đầu quá trình kết nối
 connectWithRetry();
 
 module.exports = connectToDatabase;
