@@ -1,10 +1,6 @@
 'use strict';
-const fs = require('fs')
 const { Sequelize } = require('sequelize'); // Correct the import path if needed
 require('dotenv').config();
-const path = require('path')
-const certificatePath = path.join(__dirname, '/DigiCertGlobalRootCA.crt.pem')
-const serverCa = [fs.readFileSync(certificatePath, 'utf8')]
 
 const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASSWORD, {
   host: process.env.DB_HOST,
@@ -19,7 +15,6 @@ const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, proces
   dialectOptions: {
     ssl: {
     rejectUnauthorized: true,
-    ca: serverCa
     }
   }
 });
