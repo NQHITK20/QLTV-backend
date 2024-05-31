@@ -20,9 +20,9 @@
 
   },
   "production": {
-    "username": "sql12710182",
+    "username": "sql12710809",
     "password": "SMziuZ7Tkd",
-    "database": "sql12710182",
+    "database": "sql12710809",
     "host": "sql12.freesqldatabase.com",
     "dialect": "mysql"
   }
