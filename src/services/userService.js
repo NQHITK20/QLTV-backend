@@ -237,16 +237,13 @@ let exportDataUser = async () => {
       // Lấy tên cột từ model (hoặc bạn có thể xác định tên cột thủ công)
       const columns = Object.keys(data[0]);
       worksheet.addRow(columns);
+      console.log('checkk',worksheet)
   
       // Thêm dữ liệu từ kết quả truy vấn vào worksheet
       data.forEach(row => {
         const rowData = Object.values(row);
         worksheet.addRow(rowData);
       });
-      console.log('check ',worksheet)
-
-      
-      
       // Trả về buffer chứa dữ liệu workbook
       return await workbook.xlsx.writeBuffer();
     } else {
