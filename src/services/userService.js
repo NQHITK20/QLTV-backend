@@ -237,6 +237,7 @@ let exportDataUser = async () => {
       // Lấy tên cột từ model (hoặc bạn có thể xác định tên cột thủ công)
       const columns = Object.keys(data[0]);
       worksheet.columns = columns.map(column => ({ header: column, key: column }));
+      console.log('check collumn',columns)
   
       // Thêm dữ liệu từ kết quả truy vấn vào worksheet
       data.forEach(row => {
