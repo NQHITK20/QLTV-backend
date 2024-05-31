@@ -235,7 +235,7 @@ let exportDataUser = async () => {
       const worksheet = workbook.addWorksheet('Data');
 
       // Lấy tên cột từ model (hoặc bạn có thể xác định tên cột thủ công)
-      const columns = Object.keys(data[0]);
+      const columns = Object.keys(data[0][0]);
       worksheet.columns = columns.map(column => ({ header: column, key: column }));
       console.log('check collumn',columns)
   
