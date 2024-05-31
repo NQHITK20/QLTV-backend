@@ -68,6 +68,11 @@ let getAllBook = (id) => {
             }
             if (id=="ALL") {
                 let data = await db.Book.findAll({
+                    include: [
+                        {
+                            model: db.Category, as: 'categoryId', attributes: ['id'],
+                        },
+                    ],
                 })
                 if (data) {
                     resolve({
