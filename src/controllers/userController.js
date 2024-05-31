@@ -104,7 +104,7 @@ let exportDataUser = async (req, res) => {
       // Lấy dữ liệu từ service
       let message = await userService.exportDataUser()
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      res.setHeader('Content-Disposition', 'attachment; filename=DuLieuNguoiDung.xlsx');
+      res.setHeader('Content-Disposition', 'attachment; filename=dataUser.xlsx');
       return res.status(200).send(message)
     } catch (error) {
       console.error('Có lỗi khi xử lý yêu cầu:', error);
