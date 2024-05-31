@@ -243,6 +243,8 @@ let exportDataUser = async () => {
         const rowData = Object.values(row);
         worksheet.addRow(rowData);
       });
+      console.log('check ',worksheet)
+
       
       
       // Trả về buffer chứa dữ liệu workbook
