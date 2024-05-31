@@ -68,11 +68,6 @@ let getAllBook = (id) => {
             }
             if (id=="ALL") {
                 let data = await db.Book.findAll({
-                    include: [
-                        {
-                            model: db.Category, as: 'categoryId', attributes: ['id'],
-                        },
-                    ],
                 })
                 if (data) {
                     resolve({
@@ -86,7 +81,12 @@ let getAllBook = (id) => {
                 } 
             }else{
                 let data = await db.Book.findOne({
-                    where:{id:id}
+                    where:{id:id},
+                    include: [
+                        {
+                            model: db.Category, as: 'categoryId', attributes: ['id'],
+                        },
+                    ],
                 })
                 if (data) {
                     resolve({
