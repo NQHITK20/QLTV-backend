@@ -234,15 +234,16 @@ let exportDataUser = async () => {
       const workbook = new exceljs.Workbook();
       const worksheet = workbook.addWorksheet('Data');
 
-      // Lấy tên cột từ model (hoặc bạn có thể xác định tên cột thủ công)
-      const columns = Object.keys(data[0][0]);
+      // Trích xuất dataValues từ mỗi đối tượng trong data
+      const extractedData = data.map(item => item.dataValues);
+
+      // Lấy tên cột từ đối tượng đầu tiên trong extractedData
+      const columns = Object.keys(extractedData[0]);
       worksheet.columns = columns.map(column => ({ header: column, key: column }));
-      console.log('check collumn',columns)
-  
-      // Thêm dữ liệu từ kết quả truy vấn vào worksheet
-      data.forEach(row => {
-        const rowData = Object.values(row);
-        worksheet.addRow(rowData);
+
+      // Thêm dữ liệu từ extractedData vào worksheet
+      extractedData.forEach(row => {
+          worksheet.addRow(row);
       });
       // Trả về buffer chứa dữ liệu workbook
       return await workbook.xlsx.writeBuffer();
