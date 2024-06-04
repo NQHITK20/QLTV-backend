@@ -2,21 +2,15 @@
 const { Sequelize } = require('sequelize'); // Correct the import path if needed
 require('dotenv').config();
 
-const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASSWORD, {
-  host: process.env.DB_HOST,
+const sequelize = new Sequelize('qltv', 'root', '', {
+  host: '127.0.0.1',
   dialect: 'mysql',
-  dialectModule: require('mysql2'),
   pool: {
     max: parseInt(process.env.DB_POOL_MAX) || 15,
     min: parseInt(process.env.DB_POOL_MIN) || 5,
     acquire: parseInt(process.env.DB_POOL_ACQUIRE) || 20000,
     idle: parseInt(process.env.DB_POOL_IDLE) || 30000
   },
-  dialectOptions: {
-    ssl: {
-    rejectUnauthorized: true,
-    }
-  }
 });
 let connectToDatabase = async () => {
   try {

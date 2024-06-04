@@ -82,15 +82,14 @@ let getAllBook = (id) => {
             }else{
                 let data = await db.Book.findOne({
                     where:{id:id},
-                    include: [
-                        {
-                            model: db.Category, as: 'categoryId', attributes: ['id'],
-                        },
-                    ],
+                })
+                let category =  await db.Category.findOne({
+                    where:{category:data.category},
                 })
                 if (data) {
                     resolve({
-                        data
+                        data,
+                        category
                     })
                 } else {
                     resolve({
