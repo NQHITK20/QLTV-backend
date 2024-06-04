@@ -142,7 +142,6 @@ let handleUserLogin = (email, password) => {
                 if (user) {
                     let check = bcrypt.compareSync(password, user.password);
                     if (check) {
-                        // Tạo JWT
                         userData.errCode = 0;
                         // Xóa mật khẩu trước khi trả về dữ liệu người dùng
                         delete user.password;
