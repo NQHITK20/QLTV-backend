@@ -104,9 +104,42 @@ let getAllBook = (id) => {
         }
     })
 }
+let editBook = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+                let book = await db.Book.findOne({
+                    where: { bookCode: data.bookCode },
+                    raw: false
+                })
+                if (book) {
+                    let cat = await db.Category.findOne({
+                        where:{id:data.category}
+                    })
+                    book.author = data.author
+                    book.bookName = data.bookName
+                    book.category = cat.category
+                    book.description = data.description
+                    book.image = data.image
+                    book.soLuong = data.soLuong
+                    await book.save();
+                    resolve({
+                        errCode: 0,
+                    });
+                }
+                else {
+                    resolve({
+                        errCode: 1,
+                        errMessage: ' Lỗi sever không tìm thấy sách',
+                    });
+                }
+        } catch (error) {
+            reject(error)
+        }
+    })
+}
 
 
 
 module.exports = {
-    createBook,getAllCategory,getAllBook
+    createBook,getAllCategory,getAllBook,editBook
 }

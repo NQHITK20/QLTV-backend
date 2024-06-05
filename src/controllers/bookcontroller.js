@@ -36,7 +36,18 @@ let getAllBook = async (req, res) => {
         })
     }
 }
-
+let editBook = async (req,res) => {
+    try {
+        let userData = await bookService.editBook(req.body);
+        return res.status(200).json(userData)
+    } catch (error) {
+        console.log(error)
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Lỗi từ sever'
+        })
+    }
+}
 export default {
-    createBook,getAllCategory,getAllBook
+    createBook,getAllCategory,getAllBook,editBook
 }

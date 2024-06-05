@@ -146,6 +146,13 @@ let handleUserLogin = (email, password) => {
                         // Xóa mật khẩu trước khi trả về dữ liệu người dùng
                         delete user.password;
                         userData.user = user;
+                        const payload = {
+                            name: user.lastName,
+                            role: user.roleId
+                        };
+                        if (payload.role === 2 || payload.role === 3) {
+                        userData.token =  jwt.sign(payload, process.env.JWT, { expiresIn: '10000h' });
+                        }
                     } else {
                         userData.errCode = 3;
                         userData.errMessage = 'Mật khẩu không chính xác. Vui lòng nhập lại';
