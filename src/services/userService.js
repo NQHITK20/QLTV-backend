@@ -229,39 +229,46 @@ let deleteUser = (userId) => {
 }
 let exportDataUser = async () => {
     try {
-      // Lấy dữ liệu từ cơ sở dữ liệu
-      let data = await db.User.findAll({
-        attributes: {
+        // Lấy dữ liệu từ cơ sở dữ liệu
+        let data = await db.User.findAll({
+          attributes: {
             exclude: ['password']
+          },
+          raw: true // Lấy dữ liệu ở dạng đơn giản (plain objects)
+        });
+    
+        if (data && data.length > 0) {
+          // Tạo workbook Excel
+          const workbook = new exceljs.Workbook();
+          const worksheet = workbook.addWorksheet('Data');
+    
+          // Lấy các thuộc tính của model làm tiêu đề cột
+          const columnHeaders = Object.keys(data[0]); // Lấy tên cột từ đối tượng đầu tiên
+    
+          // Thêm tiêu đề cột trực tiếp vào hàng đầu tiên của worksheet
+          worksheet.addRow(columnHeaders);
+    
+          // Điền dữ liệu vào các hàng
+          data.forEach((row) => {
+            worksheet.addRow(Object.values(row)); // Thêm dữ liệu hàng vào worksheet
+          });
+    
+          // Trả về buffer chứa dữ liệu workbook
+          const buffer = await workbook.xlsx.writeBuffer();
+          return buffer;
+        } else {
+          return {
+            errCode: 1,
+            errMessage: "Không tìm thấy dữ liệu hoặc có lỗi từ server"
+          };
         }
-    })
-    if (data) {        
-      // Tạo workbook Excel
-      const workbook = new exceljs.Workbook();
-      const worksheet = workbook.addWorksheet('Data');
-
-      // Trích xuất dataValues từ mỗi đối tượng trong data
-      const extractedData = data.map(item => item.dataValues);
-
-      // Lấy tên cột từ đối tượng đầu tiên trong extractedData
-      const columns = Object.keys(extractedData[0]);
-      worksheet.columns = columns.map(column => ({ header: column, key: column }));
-
-      // Thêm dữ liệu từ extractedData vào worksheet
-      extractedData.forEach(row => {
-          worksheet.addRow(row);
-      });
-      // Trả về buffer chứa dữ liệu workbook
-      return await workbook.xlsx.writeBuffer();
-    } else {
-        resolve({
-            errCode:1,
-            errMessage:"bug sever hoặc không tìm thấy data"
-        })
-    }
-    } catch (error) {
-      console.error('Có lỗi khi xử lý yêu cầu:', error);
-    }
+      } catch (error) {
+        console.error('Có lỗi khi xử lý yêu cầu:', error);
+        return {
+          errCode: 2,
+          errMessage: "Có lỗi khi xử lý yêu cầu"
+        };
+      }
 };
 let requestResetEmail = (data) => {
     return new Promise(async (resolve, reject) => {

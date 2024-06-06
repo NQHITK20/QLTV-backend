@@ -27,14 +27,5 @@ const checkAuth = (req, res, next) => {
     }
 };
 
-const checkIsUser = (req, res, next) => {
-    const userIdFromToken = req.user.id; 
-    const userIdFromParams = req.params.userId; 
 
-    if (userIdFromToken !== userIdFromParams) {
-        return res.status(403).json({ message: 'Bạn không có quyền truy cập vào tài nguyên này' });
-    }
-
-    next();
-};
-module.exports = { checkAuth, checkIsUser };
+module.exports =  checkAuth;

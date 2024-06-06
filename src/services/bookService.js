@@ -138,8 +138,33 @@ let editBook = (data) => {
     })
 }
 
+let deleteBook = (bookId) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let book = await db.Book.findOne({
+                where: { id: bookId }
+            })
+            if (!book) {
+                resolve({
+                    errCode: 2,
+                    errMessage: `Lối sever : Không tồn tại sách`
+                })
+            }
+            await db.Book.destroy({
+                where: { id: bookId }
+            });
+            resolve({
+                errCode: 0,
+            })
+        } catch (error) {
+            reject(error)
+        }
+    })
+}
+
 
 
 module.exports = {
-    createBook,getAllCategory,getAllBook,editBook
+    createBook,getAllCategory,getAllBook,
+    editBook,deleteBook
 }

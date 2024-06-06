@@ -48,6 +48,19 @@ let editBook = async (req,res) => {
         })
     }
 }
+let deleteBook = async (req,res) => {
+    try {
+        let userData = await bookService.deleteBook(req.body.id);
+        return res.status(200).json(userData)
+    } catch (error) {
+        console.log(error)
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Lỗi từ sever'
+        })
+    }
+}
+
 export default {
-    createBook,getAllCategory,getAllBook,editBook
+    createBook,getAllCategory,getAllBook,editBook,deleteBook
 }
