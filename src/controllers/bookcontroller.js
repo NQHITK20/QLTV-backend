@@ -48,9 +48,9 @@ let editBook = async (req,res) => {
         })
     }
 }
-let showBook = async (req,res) => {
+let showHideBook = async (req,res) => {
     try {
-        let userData = await bookService.showBook(req.body.id);
+        let userData = await bookService.showHideBook(req.body.id);
         return res.status(200).json(userData)
     } catch (error) {
         console.log(error)
@@ -74,5 +74,6 @@ let deleteBook = async (req,res) => {
 }
 
 export default {
-    createBook,getAllCategory,getAllBook,editBook,deleteBook,showBook
+    createBook,getAllCategory,getAllBook,
+    editBook,deleteBook,showHideBook
 }

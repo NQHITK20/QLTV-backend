@@ -161,7 +161,7 @@ let deleteBook = (bookId) => {
         }
     })
 }
-let showBook = (bookId) => {
+let showHideBook = (bookId) => {
     return new Promise(async (resolve, reject) => {
         try {
             let book = await db.Book.findOne({
@@ -169,11 +169,19 @@ let showBook = (bookId) => {
                 raw: false
             })
             if (book) {
-                book.showing = 0
-                await book.save();
-                resolve({
-                    errCode: 0,
-                });
+                if (book.showing == 1) {
+                    book.showing = 0
+                    await book.save();
+                    resolve({
+                        errCode: 0,
+                    });
+                } else {
+                    book.showing = 1
+                    await book.save();
+                    resolve({
+                        errCode: 0,
+                    });
+                }
             }
             else {
                 resolve({
@@ -191,5 +199,5 @@ let showBook = (bookId) => {
 
 module.exports = {
     createBook,getAllCategory,getAllBook,
-    editBook,deleteBook,showBook
+    editBook,deleteBook,showHideBook
 }
