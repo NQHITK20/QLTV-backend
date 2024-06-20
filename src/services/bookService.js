@@ -161,10 +161,35 @@ let deleteBook = (bookId) => {
         }
     })
 }
+let showBook = (bookId) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let book = await db.Book.findOne({
+                where: { id: bookId },
+                raw: false
+            })
+            if (book) {
+                book.showing = 0
+                await book.save();
+                resolve({
+                    errCode: 0,
+                });
+            }
+            else {
+                resolve({
+                    errCode: 1,
+                    errMessage: ' Lỗi sever không tìm thấy sách',
+                });
+            }
+        } catch (error) {
+            reject(error)
+        }
+    })
+}
 
 
 
 module.exports = {
     createBook,getAllCategory,getAllBook,
-    editBook,deleteBook
+    editBook,deleteBook,showBook
 }

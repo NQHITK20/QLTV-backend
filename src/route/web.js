@@ -22,6 +22,7 @@ let initWebRoute = (app) => {
     Router.post('/api/create-new-book', checkAuth, bookController.createBook); 
     Router.get('/api/get-all-category',bookController.getAllCategory);
     Router.post('/api/get-all-book', checkAuth, bookController.getAllBook); 
+    Router.post('/api/show-book', checkAuth, bookController.showBook); 
     Router.post('/api/edit-book', checkAuth, bookController.editBook); 
     Router.delete('/api/delete-book', checkAuth, bookController.deleteBook); 
 
