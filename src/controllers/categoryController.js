@@ -25,6 +25,18 @@ let editCategory = async (req, res) => {
         })
     }
 }
+let getCategory = async (req, res) => {
+    try {
+        let data = await categoryService.getCategory(req.body.id)
+        return res.status(200).json(data)
+    } catch (error) {
+        console.log(error)
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Lỗi từ sever'
+        })
+    }
+}
 
 let deleteCategory = async (req, res) => {
     try {
@@ -40,5 +52,5 @@ let deleteCategory = async (req, res) => {
 }
 
 export default {
-    createCategory,deleteCategory,editCategory
+    createCategory,deleteCategory,editCategory,getCategory
 }

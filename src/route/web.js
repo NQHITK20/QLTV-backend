@@ -31,6 +31,8 @@ let initWebRoute = (app) => {
     Router.post('/api/create-category', checkAuth, categoryController.createCategory);
     Router.delete('/api/delete-category', checkAuth, categoryController.deleteCategory);
     Router.post('/api/edit-category', checkAuth, categoryController.editCategory);
+    Router.post('/api/get-category-by-id',checkAuth,categoryController.getCategory);
+
 
 
     return app.use("/", Router);

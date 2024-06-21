@@ -77,6 +77,53 @@ let editCategory = (data) => {
     })
 }
 
+let getCategory = (id) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!id) {
+                resolve({
+                    errCode:2,
+                    errMessage:"bug sever không nhận được id truyền 1 hay nhiều"
+                })
+            }
+            if (id === "ALL") {
+                let data = await db.Category.findAll()
+                if (data) {
+                    resolve({
+                        data
+                    })
+                } else {
+                    resolve({
+                        errCode:1,
+                        errMessage:"bug sever ko load đc data"
+                    })
+                } 
+            }else{
+                let data = await db.Category.findOne({
+                    where:{id:id},
+                })
+                if (data) {
+                    resolve({
+                        errCode:0,
+                        data,
+                    })
+                } else {
+                    resolve({
+                        errCode:3,
+                        errMessage:"không tìm thấy data của id"
+                    })
+                } 
+            }
+        } catch (e) {
+            reject({
+                errCode: 500,
+                errMessage: "Lỗi server",
+                error: e
+            });
+        }
+    })
+}
+
 module.exports= {
-    createCategory,deleteCategory,editCategory
+    createCategory,deleteCategory,editCategory,getCategory
 }
