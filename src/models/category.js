@@ -18,15 +18,7 @@ module.exports = (sequelize, DataTypes) => {
         category: {
             type: DataTypes.STRING,
             field: 'category'
-        },
-        image: {
-            type: DataTypes.STRING,
-            field: 'image'
-        },
-        description: {
-            type: DataTypes.STRING,
-            field: 'description'
-        },
+        }
     }, {
         sequelize,
         modelName: 'Category',

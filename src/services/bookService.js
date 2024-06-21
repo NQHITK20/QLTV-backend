@@ -25,6 +25,7 @@ let createBook = (data) =>{
                     category: cat.category,
                     soLuong: data.soLuong,
                     image: data.image,
+                    showing: 0,
                     description: data.description,
                 }),
                 resolve({

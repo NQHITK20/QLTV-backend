@@ -1,6 +1,7 @@
 import express from "express";
 import userController from "../controllers/userController";
 import bookController from "../controllers/bookcontroller";
+import categoryController from "../controllers/categoryController";
 import checkAuth from "../middleware/checkAuth";
 
 let Router = express.Router();
@@ -22,9 +23,15 @@ let initWebRoute = (app) => {
     Router.post('/api/create-new-book', checkAuth, bookController.createBook); 
     Router.get('/api/get-all-category',bookController.getAllCategory);
     Router.post('/api/get-all-book', checkAuth, bookController.getAllBook); 
-    Router.post('/api/show-book', checkAuth, bookController.showHideBook); 
+    Router.post('/api/show-hide-book', checkAuth, bookController.showHideBook); 
     Router.post('/api/edit-book', checkAuth, bookController.editBook); 
     Router.delete('/api/delete-book', checkAuth, bookController.deleteBook); 
+
+    //Category
+    Router.post('/api/create-category', checkAuth, categoryController.createCategory);
+    Router.delete('/api/delete-category', checkAuth, categoryController.deleteCategory);
+    Router.post('/api/edit-category', checkAuth, categoryController.editCategory);
+
 
     return app.use("/", Router);
 };
