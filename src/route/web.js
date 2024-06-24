@@ -2,6 +2,7 @@ import express from "express";
 import userController from "../controllers/userController";
 import bookController from "../controllers/bookcontroller";
 import categoryController from "../controllers/categoryController";
+import newController from "../controllers/newController";
 import checkAuth from "../middleware/checkAuth";
 
 let Router = express.Router();
@@ -32,6 +33,9 @@ let initWebRoute = (app) => {
     Router.delete('/api/delete-category', checkAuth, categoryController.deleteCategory);
     Router.post('/api/edit-category', checkAuth, categoryController.editCategory);
     Router.post('/api/get-category-by-id',checkAuth,categoryController.getCategory);
+
+    //News
+    
 
 
 
