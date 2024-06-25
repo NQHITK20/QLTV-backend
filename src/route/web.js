@@ -8,6 +8,7 @@ import checkAuth from "../middleware/checkAuth";
 let Router = express.Router();
 
 let initWebRoute = (app) => {
+
     // Các yêu cầu user
     Router.post('/api/create-new-user', userController.createUser);
     Router.get('/api/get-all-user', checkAuth, userController.getAllUser);
@@ -37,9 +38,9 @@ let initWebRoute = (app) => {
     //News
     Router.post('/api/create-news', checkAuth, newController.createNew);
     Router.post('/api/get-news', checkAuth, newController.getNew);
+    Router.post('/api/edit-news', checkAuth, newController.editNew);
+    Router.delete('/api/delete-news', checkAuth, newController.deleteNew);
     
-
-
 
     return app.use("/", Router);
 };

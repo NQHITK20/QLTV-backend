@@ -46,7 +46,6 @@ let createNew = (data) => {
     });
 };
 
-
 let getNew = (id) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -91,6 +90,60 @@ let getNew = (id) => {
     })
 }
 
+let editNew = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+                let book = await db.News.findOne({
+                    where: { id: data.id },
+                    raw: false
+                })
+                if (book) {
+                    book.title = data.title
+                    book.image = data.image
+                    book.content = data.content
+                    book.author = data.author
+                    await book.save();
+                    resolve({
+                        errCode: 0,
+                    });
+                }
+                else {
+                    resolve({
+                        errCode: 1,
+                        errMessage: ' Lỗi sever không tìm thấy tin tức',
+                    });
+                }
+        } catch (error) {
+            reject(error)
+        }
+    })
+}
+
+let deleteNew = (newId) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let book = await db.News.findOne({
+                where: { id: newId }
+            })
+            if (!book) {
+                resolve({
+                    errCode: 2,
+                    errMessage: `Lối sever : Không tồn tại tin tức`
+                })
+            }
+            await db.News.destroy({
+                where: { id: newId }
+            });
+            resolve({
+                errCode: 0,
+            })
+        } catch (error) {
+            reject(error)
+        }
+    })
+}
+
+
 module.exports = {
-    createNew,getNew
+    createNew,getNew,editNew,deleteNew
 };
