@@ -35,6 +35,8 @@ let initWebRoute = (app) => {
     Router.post('/api/get-category-by-id',checkAuth,categoryController.getCategory);
 
     //News
+    Router.post('/api/create-news', checkAuth, newController.createNew);
+    Router.post('/api/get-news', checkAuth, newController.getNew);
     
 
 
