@@ -144,6 +144,8 @@ let deleteNew = (newId) => {
 }
 
 
+
+
 module.exports = {
     createNew,getNew,editNew,deleteNew
 };

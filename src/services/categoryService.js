@@ -124,6 +124,7 @@ let getCategory = (id) => {
     })
 }
 
+
 module.exports= {
     createCategory,deleteCategory,editCategory,getCategory
 }

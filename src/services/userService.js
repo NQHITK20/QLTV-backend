@@ -299,9 +299,12 @@ let getCount = () => {
     return new Promise(async (resolve, reject) => {
         try {
             let countUser = await db.User.count()
+            let countBook = await db.Book.count()
+            let countCategory = await db.Category.count()
+            let countNews = await db.News.count()
             if (countUser) {
                 resolve({
-                    countUser:countUser
+                    countUser,countBook,countCategory,countNews
                 })
             } else {
                 resolve({

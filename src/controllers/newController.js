@@ -53,6 +53,8 @@ let deleteNew = async (req, res) => {
     }
 }
 
+
+
 module.exports = {
     createNew,getNew,editNew,deleteNew
 };

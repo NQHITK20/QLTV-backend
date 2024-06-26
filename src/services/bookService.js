@@ -1,5 +1,6 @@
 import { where } from "sequelize";
 const db = require('../models');
+const exceljs = require('exceljs');
 
 
 let createBook = (data) =>{
@@ -195,10 +196,53 @@ let showHideBook = (bookId) => {
         }
     })
 }
+let exportDataBook = async () => {
+    try {
+        // Lấy dữ liệu từ cơ sở dữ liệu
+        let data = await db.Book.findAll({
+          attributes: {
+            exclude: ['showing','image']
+          },
+          raw: true // Lấy dữ liệu ở dạng đơn giản (plain objects)
+        });
+    
+        if (data && data.length > 0) {
+          // Tạo workbook Excel
+          const workbook = new exceljs.Workbook();
+          const worksheet = workbook.addWorksheet('Data');
+    
+          // Lấy các thuộc tính của model làm tiêu đề cột
+          const columnHeaders = Object.keys(data[0]); // Lấy tên cột từ đối tượng đầu tiên
+    
+          // Thêm tiêu đề cột trực tiếp vào hàng đầu tiên của worksheet
+          worksheet.addRow(columnHeaders);
+    
+          // Điền dữ liệu vào các hàng
+          data.forEach((row) => {
+            worksheet.addRow(Object.values(row)); // Thêm dữ liệu hàng vào worksheet
+          });
+    
+          // Trả về buffer chứa dữ liệu workbook
+          const buffer = await workbook.xlsx.writeBuffer();
+          return buffer;
+        } else {
+          return {
+            errCode: 1,
+            errMessage: "Không tìm thấy dữ liệu hoặc có lỗi từ server"
+          };
+        }
+      } catch (error) {
+        console.error('Có lỗi khi xử lý yêu cầu:', error);
+        return {
+          errCode: 2,
+          errMessage: "Có lỗi khi xử lý yêu cầu"
+        };
+      }
+};
 
 
 
 module.exports = {
     createBook,getAllCategory,getAllBook,
-    editBook,deleteBook,showHideBook
+    editBook,deleteBook,showHideBook,exportDataBook
 }

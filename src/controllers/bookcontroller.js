@@ -73,7 +73,21 @@ let deleteBook = async (req,res) => {
     }
 }
 
+let exportDataBook = async (req, res) => {
+    try {
+      // Lấy dữ liệu từ service
+      let message = await bookService.exportDataBook()
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', 'attachment; filename=' + 'book_data.xlsx');
+      return res.status(200).send(message)
+    } catch (error) {
+      console.error('Có lỗi khi xử lý yêu cầu:', error);
+    }
+};
+
+
+
 export default {
     createBook,getAllCategory,getAllBook,
-    editBook,deleteBook,showHideBook
+    editBook,deleteBook,showHideBook,exportDataBook
 }

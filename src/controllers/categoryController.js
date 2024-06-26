@@ -51,6 +51,7 @@ let deleteCategory = async (req, res) => {
     }
 }
 
+
 export default {
     createCategory,deleteCategory,editCategory,getCategory
 }

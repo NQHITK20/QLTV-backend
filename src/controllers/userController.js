@@ -109,7 +109,7 @@ let exportDataUser = async (req, res) => {
     } catch (error) {
       console.error('Có lỗi khi xử lý yêu cầu:', error);
     }
-  };
+};
 
 let sendResetEmail = async (req, res) => {
     try {
