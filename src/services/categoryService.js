@@ -82,37 +82,53 @@ let getCategory = (id) => {
         try {
             if (!id) {
                 resolve({
-                    errCode:2,
-                    errMessage:"bug sever không nhận được id truyền 1 hay nhiều"
-                })
+                    errCode: 2,
+                    errMessage: "bug sever không nhận được id truyền 1 hay nhiều"
+                });
             }
+
             if (id === "ALL") {
-                let data = await db.Category.findAll()
+                let data = await db.Category.findAll();
                 if (data) {
                     resolve({
                         data
-                    })
+                    });
                 } else {
                     resolve({
-                        errCode:1,
-                        errMessage:"bug sever ko load đc data"
-                    })
-                } 
-            }else{
-                let data = await db.Category.findOne({
-                    where:{id:id},
-                })
+                        errCode: 1,
+                        errMessage: "bug sever ko load đc data"
+                    });
+                }
+            } else if (id === "F8") {
+                let data = await db.Category.findAll({
+                    limit: 8
+                });
                 if (data) {
                     resolve({
-                        errCode:0,
-                        data,
-                    })
+                        errCode: 0,
+                        data
+                    });
                 } else {
                     resolve({
-                        errCode:3,
-                        errMessage:"không tìm thấy data của id"
-                    })
-                } 
+                        errCode: 1,
+                        errMessage: "bug sever ko load đc data"
+                    });
+                }
+            } else {
+                let data = await db.Category.findOne({
+                    where: { id: id }
+                });
+                if (data) {
+                    resolve({
+                        errCode: 0,
+                        data
+                    });
+                } else {
+                    resolve({
+                        errCode: 3,
+                        errMessage: "không tìm thấy data của id"
+                    });
+                }
             }
         } catch (e) {
             reject({
@@ -121,8 +137,9 @@ let getCategory = (id) => {
                 error: e
             });
         }
-    })
+    });
 }
+
 
 
 module.exports= {
