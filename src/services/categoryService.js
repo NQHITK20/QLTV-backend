@@ -1,5 +1,5 @@
+const { where } = require('sequelize');
 const db = require('../models');
-const category = require('../models/category');
 
 let createCategory = (data) =>{
     return new Promise(async (resolve, reject) => {
@@ -77,6 +77,7 @@ let editCategory = (data) => {
     })
 }
 
+
 let getCategory = (id) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -100,20 +101,34 @@ let getCategory = (id) => {
                     });
                 }
             } else if (id === "F8") {
-                let data = await db.Category.findAll({
+                let categories   = await db.Category.findAll({
                     limit: 8
                 });
-                if (data) {
-                    resolve({
-                        errCode: 0,
-                        data
-                    });
-                } else {
-                    resolve({
-                        errCode: 1,
-                        errMessage: "bug sever ko load đc data"
-                    });
-                }
+               let result = [];
+
+        // Duyệt qua từng đối tượng Category
+        for (let i = 0; i < categories.length; i++) {
+            let category = categories[i];
+
+            // Tìm sách có category trùng với category của đối tượng hiện tại
+            let books = await db.Book.findAll({
+                where: {
+                    category: category.category // Chỉ lấy sách có category trùng với category của đối tượng hiện tại
+                },
+                attributes:['bookName','author']
+            });
+
+            // Thêm kết quả vào mảng result
+            result.push({
+                catId: category.id,
+                books: books // Lưu lại sách tìm được
+            });
+            }
+                resolve({
+                    errCode: 0,
+                    categories,
+                    result,
+                });
             } else {
                 let data = await db.Category.findOne({
                     where: { id: id }
