@@ -53,8 +53,19 @@ let deleteNew = async (req, res) => {
     }
 }
 
-
+let showHideNew = async (req,res) => {
+    try {
+        let userData = await newService.showHideNew(req.body.id);
+        return res.status(200).json(userData)
+    } catch (error) {
+        console.log(error)
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Lỗi từ sever'
+        })
+    }
+}
 
 module.exports = {
-    createNew,getNew,editNew,deleteNew
+    createNew,getNew,editNew,deleteNew,showHideNew
 };

@@ -27,6 +27,10 @@ module.exports = {
                 type: Sequelize.STRING,
                 allowNull: false,
             },
+            showing: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+            },
             publicAt: {
                 allowNull: true,
                 type: Sequelize.DATE

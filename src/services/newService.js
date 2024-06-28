@@ -24,6 +24,7 @@ let createNew = (data) => {
                     image: data.image,
                     content: data.content,
                     author: data.author,
+                    showing: 0,
                     publicAt : getCurrentDateISO()
                 });
 
@@ -55,8 +56,28 @@ let getNew = (id) => {
                     errMessage:"bug sever không nhận được id truyền 1 hay nhiều"
                 })
             }
+            if (id=="F7") {
+                let data = await db.News.findAll({
+                    order: [['publicAt', 'DESC']],
+                    attributes: {
+                        exclude: ['content', 'createdAt','updatedAt'] // Thay 'column1' và 'column2' bằng tên các cột bạn muốn loại bỏ
+                    },
+                    limit:7
+                })
+                if (data) {
+                    resolve({
+                        data
+                    })
+                } else {
+                    resolve({
+                        errCode:1,
+                        errMessage:"bug sever ko load đc data"
+                    })
+                } 
+            }
             if (id=="ALL") {
                 let data = await db.News.findAll({
+                    order: [['publicAt', 'DESC']]
                 })
                 if (data) {
                     resolve({
@@ -123,7 +144,8 @@ let deleteNew = (newId) => {
     return new Promise(async (resolve, reject) => {
         try {
             let book = await db.News.findOne({
-                where: { id: newId }
+                where: { id: newId },
+
             })
             if (!book) {
                 resolve({
@@ -143,9 +165,43 @@ let deleteNew = (newId) => {
     })
 }
 
-
-
+let showHideNew = (newId) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let booknew  = await db.News.findOne({
+                where: { id: newId },
+                raw: false
+            })
+            if (booknew) {
+                let curdate = booknew.createdAt
+                if (booknew.showing === 0) {
+                    booknew.publicAt = getCurrentDateISO()
+                    booknew.showing = 1
+                    await booknew.save();
+                    resolve({
+                        errCode: 0,
+                    });
+                } else {
+                    booknew.publicAt = curdate
+                    booknew.showing = 0
+                    await booknew.save();
+                    resolve({
+                        errCode: 0,
+                    });
+                }
+            }
+            else {
+                resolve({
+                    errCode: 1,
+                    errMessage: ' Lỗi sever không tìm thấy sách',
+                });
+            }
+        } catch (error) {
+            reject(error)
+        }
+    })
+}
 
 module.exports = {
-    createNew,getNew,editNew,deleteNew
+    createNew,getNew,editNew,deleteNew,showHideNew
 };

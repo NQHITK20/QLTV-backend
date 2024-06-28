@@ -42,6 +42,7 @@ let initWebRoute = (app) => {
     Router.post('/api/get-news', newController.getNew);
     Router.post('/api/edit-news', checkAuth, newController.editNew);
     Router.delete('/api/delete-news', checkAuth, newController.deleteNew);
+    Router.post('/api/show-hide-new', checkAuth, newController.showHideNew); 
     
 
     return app.use("/", Router);

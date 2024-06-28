@@ -68,8 +68,25 @@ let getAllBook = (id) => {
                     errMessage:"bug sever không nhận được id truyền 1 hay nhiều"
                 })
             }
+            if (id=="F10") {
+                let data = await db.Book.findAll({
+                    order: [['createdAt', 'DESC']],
+                    limit: 15
+                })
+                if (data) {
+                    resolve({
+                        data
+                    })
+                } else {
+                    resolve({
+                        errCode:1,
+                        errMessage:"bug sever ko load đc data"
+                    })
+                } 
+            }
             if (id=="ALL") {
                 let data = await db.Book.findAll({
+                    order: [['createdAt', 'DESC']]
                 })
                 if (data) {
                     resolve({
@@ -201,7 +218,8 @@ let exportDataBook = async () => {
         // Lấy dữ liệu từ cơ sở dữ liệu
         let data = await db.Book.findAll({
           attributes: {
-            exclude: ['showing','image']
+            exclude: ['showing','image'],
+            order: [['createdAt', 'DESC']]
           },
           raw: true // Lấy dữ liệu ở dạng đơn giản (plain objects)
         });

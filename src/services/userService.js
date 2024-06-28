@@ -75,7 +75,8 @@ let getAllUser = () => {
         try {
             let data = await db.User.findAll({
                 attributes: {
-                    exclude: ['password']
+                    exclude: ['password'],
+                    order: [['createdAt', 'DESC']]
                 }
             })
             if (data) {
@@ -232,7 +233,8 @@ let exportDataUser = async () => {
         // Lấy dữ liệu từ cơ sở dữ liệu
         let data = await db.User.findAll({
           attributes: {
-            exclude: ['password']
+            exclude: ['password'],
+            order: [['createdAt', 'DESC']]
           },
           raw: true // Lấy dữ liệu ở dạng đơn giản (plain objects)
         });

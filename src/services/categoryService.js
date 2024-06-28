@@ -89,7 +89,9 @@ let getCategory = (id) => {
             }
 
             if (id === "ALL") {
-                let data = await db.Category.findAll();
+                let data = await db.Category.findAll({
+                    order: [['createdAt', 'DESC']]
+                });
                 if (data) {
                     resolve({
                         data
@@ -100,9 +102,9 @@ let getCategory = (id) => {
                         errMessage: "bug sever ko load đc data"
                     });
                 }
-            } else if (id === "F8") {
+            } else if (id === "F10") {
                 let categories   = await db.Category.findAll({
-                    limit: 8
+                    limit: 10
                 });
                let result = [];
 
@@ -113,15 +115,29 @@ let getCategory = (id) => {
             // Tìm sách có category trùng với category của đối tượng hiện tại
             let books = await db.Book.findAll({
                 where: {
-                    category: category.category // Chỉ lấy sách có category trùng với category của đối tượng hiện tại
+                    category: category.category,
+                    showing : 1,
+                    // Chỉ lấy sách có category trùng với category của đối tượng hiện tại
                 },
-                attributes:['bookName','author']
+                attributes:['bookName','author'],
+                limit:300
+            });
+            let newbooks = await db.Book.findAll({
+                where: {
+                    category: category.category,
+                    showing : 1,
+                   // Chỉ lấy sách có category trùng với category của đối tượng hiện tại
+                },
+                limit:300,
+                attributes:['bookName','author'],
+                order: [['createdAt', 'DESC']]
             });
 
             // Thêm kết quả vào mảng result
             result.push({
                 catId: category.id,
-                books: books // Lưu lại sách tìm được
+                books: books,
+                newbooks:newbooks // Lưu lại sách tìm được
             });
             }
                 resolve({
