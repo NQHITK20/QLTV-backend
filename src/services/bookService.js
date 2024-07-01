@@ -70,8 +70,9 @@ let getAllBook = (id) => {
             }
             if (id=="F10") {
                 let data = await db.Book.findAll({
+                    where :{showing: 1},
                     order: [['createdAt', 'DESC']],
-                    limit: 15
+                    limit: 12
                 })
                 if (data) {
                     resolve({
@@ -86,6 +87,7 @@ let getAllBook = (id) => {
             }
             if (id=="ALL") {
                 let data = await db.Book.findAll({
+                    where :{showing: 1},
                     order: [['createdAt', 'DESC']]
                 })
                 if (data) {
