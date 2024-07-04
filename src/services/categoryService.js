@@ -77,7 +77,6 @@ let editCategory = (data) => {
     })
 }
 
-
 let getCategory = (id) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -86,6 +85,41 @@ let getCategory = (id) => {
                     errCode: 2,
                     errMessage: "bug sever không nhận được id truyền 1 hay nhiều"
                 });
+            }
+
+            if (id === "CatAndCount") {
+                let categories = await db.Category.findAll({
+                    order: [['createdAt', 'DESC']],
+                    limit: 10
+                });
+                
+                // Hàm truy xuất số lượng sách cho từng danh mục
+                const getBooksCountForCategory = async (category) => {
+                    return await db.Book.count({
+                        where: { category: category,
+                                 showing:1,
+                               },
+                    });
+                };
+                
+                // Sử dụng Promise.all để thực hiện các truy vấn đồng thời
+                let data = await Promise.all(categories.map(async (category) => {
+                    let booksCount = await getBooksCountForCategory(category.category);
+                    return {
+                        category: category.category, // giả sử tên danh mục là 'name'
+                        booksCount: booksCount
+                    };
+                }));
+                if (data) {
+                    resolve({
+                        data
+                    });
+                } else {
+                    resolve({
+                        errCode: 1,
+                        errMessage: "bug sever ko load đc data"
+                    });
+                }
             }
 
             if (id === "ALL") {

@@ -21,6 +21,7 @@ let createNew = (data) => {
             } else {
                 let newNews = await db.News.create({
                     title: data.title,
+                    description: data.description,
                     image: data.image,
                     content: data.content,
                     author: data.author,
@@ -56,11 +57,11 @@ let getNew = (id) => {
                     errMessage:"bug sever không nhận được id truyền 1 hay nhiều"
                 })
             }
-            if (id=="F7") {
+            if (id == "F7") {
                 let data = await db.News.findAll({
                     order: [['publicAt', 'DESC']],
                     attributes: {
-                        exclude: ['content', 'createdAt','updatedAt'] // Thay 'column1' và 'column2' bằng tên các cột bạn muốn loại bỏ
+                        exclude: ['content', 'createdAt','updatedAt']
                     },
                     limit:7
                 })
@@ -77,7 +78,10 @@ let getNew = (id) => {
             }
             if (id=="ALL") {
                 let data = await db.News.findAll({
-                    order: [['publicAt', 'DESC']]
+                    order: [['publicAt', 'DESC']],
+                    attributes: {
+                        exclude: ['content']
+                    },
                 })
                 if (data) {
                     resolve({
@@ -120,6 +124,7 @@ let editNew = (data) => {
                 })
                 if (book) {
                     book.title = data.title
+                    book.description = data.description
                     book.image = data.image
                     book.content = data.content
                     book.author = data.author
