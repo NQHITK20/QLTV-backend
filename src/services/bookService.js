@@ -70,9 +70,25 @@ let getAllBook = (id) => {
             }
             if (id=="F10") {
                 let data = await db.Book.findAll({
-                    where :{showing: 1},
                     order: [['createdAt', 'DESC']],
-                    limit: 12
+                    where :{showing: 1},
+                    limit: 10
+                })
+                if (data) {
+                    resolve({
+                        data
+                    })
+                } else {
+                    resolve({
+                        errCode:1,
+                        errMessage:"bug sever ko load đc data"
+                    })
+                } 
+            }
+            if (id=="ALLSHOW") {
+                let data = await db.Book.findAll({
+                    where :{showing: 1},
+                    order: [['createdAt', 'DESC']]
                 })
                 if (data) {
                     resolve({
@@ -87,7 +103,6 @@ let getAllBook = (id) => {
             }
             if (id=="ALL") {
                 let data = await db.Book.findAll({
-                    where :{showing: 1},
                     order: [['createdAt', 'DESC']]
                 })
                 if (data) {

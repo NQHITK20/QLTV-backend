@@ -60,10 +60,32 @@ let getNew = (id) => {
             if (id == "F7") {
                 let data = await db.News.findAll({
                     order: [['publicAt', 'DESC']],
+                    where :{
+                        showing :1
+                    },
                     attributes: {
                         exclude: ['content', 'createdAt','updatedAt']
                     },
                     limit:7
+                })
+                if (data) {
+                    resolve({
+                        data
+                    })
+                } else {
+                    resolve({
+                        errCode:1,
+                        errMessage:"bug sever ko load đc data"
+                    })
+                } 
+            }
+            if (id=="ALLSHOW") {
+                let data = await db.News.findAll({
+                    where :{showing: 1},
+                    attributes: {
+                        exclude: ['content']
+                    },
+                    order: [['publicAt', 'DESC']]
                 })
                 if (data) {
                     resolve({
