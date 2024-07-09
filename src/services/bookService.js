@@ -140,6 +140,37 @@ let getAllBook = (id) => {
         }
     })
 }
+let getRelatedBook = (categoryBook) =>{
+    return new Promise(async (resolve, reject) => {
+        try {
+                let relatedbook = await db.Book.findAll({
+                    where: {
+                        category: categoryBook,
+                        showing: 1,
+                     },
+                     attributes: {
+                        exclude: ['showing','description','createdAt','updatedAt'],
+                     },
+                    order: [['createdAt', 'DESC']],
+                    limit: 7,
+                    raw: false
+                })
+                if (relatedbook) {
+                    resolve({
+                        relatedbook
+                    });
+                }
+                else {
+                    resolve({
+                        errCode: 1,
+                        errMessage: ' Lỗi sever không tìm thấy sách',
+                    });
+                }
+        } catch (error) {
+            reject(error)
+        }
+    })
+}
 let editBook = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -173,7 +204,6 @@ let editBook = (data) => {
         }
     })
 }
-
 let deleteBook = (bookId) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -276,8 +306,7 @@ let exportDataBook = async () => {
 };
 
 
-
 module.exports = {
-    createBook,getAllCategory,getAllBook,
+    createBook,getAllCategory,getAllBook,getRelatedBook,
     editBook,deleteBook,showHideBook,exportDataBook
 }
