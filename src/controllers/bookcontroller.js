@@ -38,7 +38,7 @@ let getAllBook = async (req, res) => {
 }
 let getRelatedBook = async (req, res) => {
     try {
-        let data = await bookService.getRelatedBook(req.body.categoryBook)
+        let data = await bookService.getRelatedBook(req.body.categoryBook,req.body.bookId)
         return res.status(200).json(data)
     } catch (error) {
         console.log(error)

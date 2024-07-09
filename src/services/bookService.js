@@ -140,37 +140,40 @@ let getAllBook = (id) => {
         }
     })
 }
-let getRelatedBook = (categoryBook) =>{
+let getRelatedBook = (categoryBook, bookId) => {
     return new Promise(async (resolve, reject) => {
         try {
-                let relatedbook = await db.Book.findAll({
-                    where: {
-                        category: categoryBook,
-                        showing: 1,
-                     },
-                     attributes: {
-                        exclude: ['showing','description','createdAt','updatedAt'],
-                     },
-                    order: [['createdAt', 'DESC']],
-                    limit: 7,
-                    raw: false
-                })
-                if (relatedbook) {
-                    resolve({
-                        relatedbook
-                    });
-                }
-                else {
-                    resolve({
-                        errCode: 1,
-                        errMessage: ' Lỗi sever không tìm thấy sách',
-                    });
-                }
+            let relatedbook = await db.Book.findAll({
+                where: {
+                    category: categoryBook,
+                    showing: 1,
+                    id: {
+                        [db.Sequelize.Op.ne]: bookId  // Điều kiện loại trừ sách có id là bookId
+                    }
+                },
+                attributes: {
+                    exclude: ['showing', 'description', 'createdAt', 'updatedAt']
+                },
+                order: [['createdAt', 'DESC']],
+                limit: 7
+            });
+
+            if (relatedbook) {
+                resolve({
+                    relatedbook
+                });
+            } else {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Lỗi server không tìm thấy sách'
+                });
+            }
         } catch (error) {
-            reject(error)
+            reject(error);
         }
-    })
+    });
 }
+
 let editBook = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
