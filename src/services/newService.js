@@ -128,9 +128,8 @@ let getNew = (id) => {
                         errCode:3,
                         errMessage:"không tìm thấy data của id"
                     })
-                } 
+                }
             }
-
         } catch (e) {
             reject(e);
         }
