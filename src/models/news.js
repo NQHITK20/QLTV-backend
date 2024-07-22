@@ -16,7 +16,7 @@ module.exports = (sequelize, DataTypes) => {
     News.init({
     title:DataTypes.STRING,
     image:DataTypes.STRING,
-    content: DataTypes.TEXT,
+    content: DataTypes.BLOB('long'),
     author: DataTypes.STRING,
     showing: DataTypes.INTEGER,
     publicAt: DataTypes.DATE,

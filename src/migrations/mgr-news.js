@@ -20,7 +20,7 @@ module.exports = {
                 allowNull: false,
             },
             content: {
-                type: Sequelize.TEXT,
+                type: Sequelize.BLOB('long'),
                 allowNull: false,
             },
             author: {
