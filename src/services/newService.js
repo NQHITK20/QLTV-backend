@@ -21,7 +21,6 @@ let createNew = (data) => {
             } else {
                 let newNews = await db.News.create({
                     title: data.title,
-                    description: data.description,
                     image: data.image,
                     content: data.content,
                     author: data.author,
@@ -145,7 +144,6 @@ let editNew = (data) => {
                 })
                 if (book) {
                     book.title = data.title
-                    book.description = data.description
                     book.image = data.image
                     book.content = data.content
                     book.author = data.author
