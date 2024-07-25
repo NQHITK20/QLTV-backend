@@ -97,9 +97,20 @@ let exportDataBook = async (req, res) => {
     }
 };
 
-
+let searchBook = async (req,res) => {
+    try {
+        let userData = await bookService.searchBook(req.body.tukhoa);
+        return res.status(200).json(userData)
+    } catch (error) {
+        console.log(error)
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Lỗi từ sever'
+        })
+    }
+}
 
 export default {
-    createBook,getAllCategory,getAllBook,getRelatedBook,
+    createBook,getAllCategory,getAllBook,getRelatedBook,searchBook,
     editBook,deleteBook,showHideBook,exportDataBook
 }

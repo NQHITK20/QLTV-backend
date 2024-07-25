@@ -3,6 +3,7 @@ import userController from "../controllers/userController";
 import bookController from "../controllers/bookcontroller";
 import categoryController from "../controllers/categoryController";
 import newController from "../controllers/newController";
+import fvbookController from "../controllers/fvbookController";
 import checkAuth from "../middleware/checkAuth";
 
 let Router = express.Router();
@@ -24,7 +25,8 @@ let initWebRoute = (app) => {
     // Book
     Router.post('/api/create-new-book', checkAuth, bookController.createBook); 
     Router.get('/api/get-all-category',bookController.getAllCategory);
-    Router.post('/api/get-all-book',  bookController.getAllBook); 
+    Router.post('/api/get-all-book',  bookController.getAllBook);
+    Router.post('/api/search-book',  bookController.searchBook);
     Router.post('/api/get-related-book', bookController.getRelatedBook); 
     Router.post('/api/show-hide-book', checkAuth, bookController.showHideBook); 
     Router.post('/api/edit-book', checkAuth, bookController.editBook); 
@@ -44,8 +46,11 @@ let initWebRoute = (app) => {
     Router.post('/api/edit-news', checkAuth, newController.editNew);
     Router.delete('/api/delete-news', checkAuth, newController.deleteNew);
     Router.post('/api/show-hide-new', checkAuth, newController.showHideNew); 
-    
 
+
+    //FvBook
+    Router.post('/api/create-fvbook', checkAuth, fvbookController.createNewFv);
+    Router.post('/api/get-fvbook', checkAuth, fvbookController.getFv);
     return app.use("/", Router);
 };
 

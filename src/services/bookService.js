@@ -1,6 +1,7 @@
 import { where } from "sequelize";
 const db = require('../models');
 const exceljs = require('exceljs');
+const Sequelize = require('sequelize');
 
 
 let createBook = (data) =>{
@@ -307,9 +308,38 @@ let exportDataBook = async () => {
         };
       }
 };
+let searchBook = (tukhoa) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            // Tìm tất cả các sách có tên chứa từ khóa
+            let books = await db.Book.findAll({
+                where: {
+                    bookName: {
+                        [Sequelize.Op.like]: `%${tukhoa}%`
+                    }
+                }
+            });
+
+            // Kiểm tra nếu có sách tìm thấy
+            if (books.length > 0) {
+                resolve({
+                    books
+                });
+            } else {
+                resolve({
+                    errCode: 1,
+                    errMessage: "Tên sách bạn tìm kiếm không có. Vui lòng thử lại."
+                });
+            }
+        } catch (error) {
+            // Xử lý lỗi và từ chối Promise
+            reject(error);
+        }
+    });
+};
 
 
 module.exports = {
-    createBook,getAllCategory,getAllBook,getRelatedBook,
+    createBook,getAllCategory,getAllBook,getRelatedBook,searchBook,
     editBook,deleteBook,showHideBook,exportDataBook
 }

@@ -132,7 +132,6 @@ let requestResetEmail = async (req, res) => {
   
 
 
-
 export default {
     createUser,getAllUser,deleteUser,sendResetEmail,requestResetEmail,
     handleLogin,getUser,editUser,exportDataUser,getCount

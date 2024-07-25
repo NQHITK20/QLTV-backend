@@ -320,6 +320,8 @@ let getCount = () => {
     })
 }
 
+
+
 module.exports= {
     createUser,hashUserPassword,checkUserEmail,getAllUser,requestResetEmail,
     handleUserLogin,getUser,editUser,deleteUser,exportDataUser,getCount

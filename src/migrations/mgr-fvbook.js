@@ -1,39 +1,20 @@
 'use strict';
-
-const { first, last } = require("lodash");
-
 module.exports = {
     up: async (queryInterface, Sequelize) => {
-        await queryInterface.createTable('news', {
+        await queryInterface.createTable('fvbooks', {
             id: {
                 allowNull: false,
                 autoIncrement: true,
                 primaryKey: true,
                 type: Sequelize.INTEGER
             },
-            title: {
-                type: Sequelize.STRING,
-                allowNull: false,
-            },
-            image: {
-                type: Sequelize.STRING,
-                allowNull: false,
-            },
-            content: {
-                type: Sequelize.TEXT('medium'),
-                allowNull: false,
-            },
-            author: {
-                type: Sequelize.STRING,
-                allowNull: false,
-            },
-            showing: {
+            idusername: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
             },
-            publicAt: {
-                allowNull: true,
-                type: Sequelize.DATE
+            idfvbook: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
             },
             createdAt: {
                 allowNull: true,
@@ -46,6 +27,6 @@ module.exports = {
         });
     },
     down: async (queryInterface, Sequelize) => {
-        await queryInterface.dropTable('news');
+        await queryInterface.dropTable('fvbooks');
     }
 };
