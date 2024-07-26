@@ -53,9 +53,9 @@ let getFv = (idusername) => {
         try {
             // Kiểm tra các tham số
             if (!idusername) {
-                return resolve({
+                resolve({
                     errCode: 1,
-                    errMessage: "Thiếu thông tin vào.",
+                    errMessage: "Vui lòng đăng nhập để có thể thêm sách vào danh sách yêu thích.",
                 });
             }
     
@@ -75,7 +75,7 @@ let getFv = (idusername) => {
                     try {
                         let fvbook = await db.Book.findOne({
                             where: {
-                                id: book.id,
+                                id: book.idfvbook,
                             }
                         });
                         results.push(fvbook);
@@ -106,7 +106,69 @@ let getFv = (idusername) => {
     });    
 };
 
+let getFv3Book = (idusername) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            // Kiểm tra các tham số
+            if (!idusername) {
+                resolve({
+                    errCode: 1,
+                    errMessage: "Vui lòng đăng nhập để có thể thêm sách vào danh sách yêu thích.",
+                });
+            }
+    
+            // Lấy danh sách sách yêu thích
+            let bookIds = await db.FvBook.findAll({
+                where: {
+                    idusername: idusername,
+                },
+                limit: 3, // Giới hạn số lượng bản ghi trả về là 3
+                order: [['createdAt', 'DESC']] // Sắp xếp theo createdAt giảm dần
+            });
+            let bookCount = bookIds.length;
+    
+            // Kiểm tra nếu có sách yêu thích
+            if (bookIds.length > 0) {
+                const results = [];
+                
+                // Xử lý từng sách yêu thích
+                for (const book of bookIds) {
+                    try {
+                        let fvbook = await db.Book.findOne({
+                            where: {
+                                id: book.idfvbook,
+                            }
+                        });
+                        results.push(fvbook);
+                    } catch (error) {
+                        console.error('Lỗi khi tìm kiếm sách:', error);
+                    }
+                }
+    
+                // Trả về kết quả
+                resolve({
+                    errCode: 0,
+                    results,
+                    bookCount
+                });
+            } else {
+                resolve({
+                    errCode: 2,
+                    errMessage: "Bạn chưa có sách yêu thích nào.",
+                });
+            }
+        } catch (e) {
+            // Xử lý lỗi và trả về thông tin lỗi
+            reject({
+                errCode: 3,
+                errMessage: 'Đã xảy ra lỗi khi thêm vào yêu thích.',
+                details: e.message
+            });
+        }
+    });    
+};
+
 
 module.exports = {
-    createNewFv,getFv
+    createNewFv,getFv,getFv3Book
 }
