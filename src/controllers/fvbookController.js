@@ -38,6 +38,32 @@ let getFv3Book = async (req, res) => {
     }
 }
 
+let checkFvBook = async (req, res) => {
+    try {
+        let data = await fvbookService.checkFvBook(req.body.idusername,req.body.bookId)
+        return res.status(200).json(data)
+    } catch (error) {
+        console.log(error)
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Lỗi từ sever'
+        })
+    }
+}
+
+let deleteFvBook = async (req, res) => {
+    try {
+        let data = await fvbookService.deleteFvBook(req.body.idusername,req.body.bookId)
+        return res.status(200).json(data)
+    } catch (error) {
+        console.log(error)
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Lỗi từ sever'
+        })
+    }
+}
+
 module.exports = {
-    createNewFv,getFv,getFv3Book
+    createNewFv,getFv,getFv3Book,checkFvBook,deleteFvBook
 };

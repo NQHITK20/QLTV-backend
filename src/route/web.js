@@ -52,6 +52,8 @@ let initWebRoute = (app) => {
     Router.post('/api/create-fvbook',  fvbookController.createNewFv);
     Router.post('/api/get-fvbook',  fvbookController.getFv);
     Router.post('/api/get-fv3',  fvbookController.getFv3Book);
+    Router.post('/api/check-fvbook',  fvbookController.checkFvBook);
+    Router.post('/api/delete-fvbook',  fvbookController.deleteFvBook);
     return app.use("/", Router);
 };
 
