@@ -160,6 +160,7 @@ let getFv3Book = (idusername) => {
                 resolve({
                     errCode: 2,
                     errMessage: "Bạn chưa có sách yêu thích nào.",
+                    bookCount: 0
                 });
             }
         } catch (e) {
