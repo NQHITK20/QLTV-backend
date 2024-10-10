@@ -5,7 +5,7 @@ let getCurrentDateISO =()=> {
     const today = new Date();
     return today.toISOString();
 }
-
+//fake news
 let createNew = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
