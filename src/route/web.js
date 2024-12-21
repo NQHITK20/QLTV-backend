@@ -4,6 +4,8 @@ import bookController from "../controllers/bookcontroller";
 import categoryController from "../controllers/categoryController";
 import newController from "../controllers/newController";
 import fvbookController from "../controllers/fvbookController";
+import borrowUserController from "../controllers/borrowUserController";
+import borrowBookController from "../controllers/borrowBookController";
 import checkAuth from "../middleware/checkAuth";
 
 let Router = express.Router();
@@ -54,6 +56,13 @@ let initWebRoute = (app) => {
     Router.post('/api/get-fv3',  fvbookController.getFv3Book);
     Router.post('/api/check-fvbook',  fvbookController.checkFvBook);
     Router.post('/api/delete-fvbook',  fvbookController.deleteFvBook);
+
+    //BorrowUser
+    Router.post('/api/create-borrow-user',  borrowUserController.createBorrowUser);
+
+    //BorrowBook
+    Router.post('/api/create-borrow-book',  borrowBookController.createBorrowBook);
+
     return app.use("/", Router);
 };
 
