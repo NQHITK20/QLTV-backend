@@ -24,6 +24,10 @@ module.exports = {
                 type: Sequelize.STRING,
                 allowNull: false,
             },
+            price: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+            },
             soLuong: {
                 type: Sequelize.INTEGER,
                 allowNull: false,

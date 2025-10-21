@@ -25,6 +25,7 @@ let createBook = (data) =>{
                     author: data.author,
                     bookCode: data.bookCode,
                     category: cat.category,
+                    price: data.price,
                     soLuong: data.soLuong,
                     image: data.image,
                     showing: 0,
