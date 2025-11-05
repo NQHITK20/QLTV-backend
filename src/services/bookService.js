@@ -1,5 +1,7 @@
+import { raw } from "body-parser";
 import { where } from "sequelize";
 const db = require('../models');
+const { Book, FvBook, sequelize } = db;
 const exceljs = require('exceljs');
 const Sequelize = require('sequelize');
 
@@ -86,6 +88,44 @@ let getAllBook = (id) => {
                         errMessage:"bug sever ko load đc data"
                     })
                 } 
+            }
+            if (id=="L12") {
+          const data = await Book.findAll({
+          where: { showing: 1 },
+          attributes: {
+          include: [
+            [
+              sequelize.fn('COUNT', sequelize.col('favorites.idfvbook')),
+              'favorite_count',
+            ],
+          ],
+        },
+        include: [
+          {
+            model: FvBook,
+            as: 'favorites',
+            attributes: [],
+          },
+        ],
+        group: ['Book.id'],
+        order: [[sequelize.literal('favorite_count'), 'DESC']],
+        limit: 12,
+        subQuery: false,
+        raw: true,
+      });
+
+      if (data && data.length > 0) {
+        resolve({
+          errCode: 0,
+          errMessage: "Lấy danh sách sách yêu thích thành công",
+          data,
+        });
+      } else {
+        resolve({
+          errCode: 1,
+          errMessage: "Không có dữ liệu sách yêu thích",
+        });
+      }
             }
             if (id=="ALLSHOW") {
                 let data = await db.Book.findAll({

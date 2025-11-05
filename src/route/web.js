@@ -35,7 +35,6 @@ let initWebRoute = (app) => {
     Router.delete('/api/delete-book', checkAuth, bookController.deleteBook);
     Router.post('/api/export-data-book', checkAuth, bookController.exportDataBook);
 
-
     //Category
     Router.post('/api/create-category', checkAuth, categoryController.createCategory);
     Router.delete('/api/delete-category', checkAuth, categoryController.deleteCategory);
@@ -48,7 +47,6 @@ let initWebRoute = (app) => {
     Router.post('/api/edit-news', checkAuth, newController.editNew);
     Router.delete('/api/delete-news', checkAuth, newController.deleteNew);
     Router.post('/api/show-hide-new', checkAuth, newController.showHideNew); 
-
 
     //FvBook
     Router.post('/api/create-fvbook',  fvbookController.createNewFv);

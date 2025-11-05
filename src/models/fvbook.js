@@ -10,6 +10,10 @@ module.exports = (sequelize, DataTypes) => {
          */
         static associate(models) {
             // define association here
+            FvBook.belongsTo(models.Book, {
+            foreignKey: 'idfvbook',
+            as: 'favorites',
+    });
         }
     }
 

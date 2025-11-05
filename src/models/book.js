@@ -11,6 +11,10 @@ module.exports = (sequelize, DataTypes) => {
         static associate(models) {
             // define association here
             Book.belongsTo(models.Category, { foreignKey: 'category', as: 'Data' });
+            Book.hasMany(models.FvBook, {
+            foreignKey: 'idfvbook', // Khóa ngoại bên bảng fvbooks trỏ tới book.id
+             as: 'favorites',
+            });
         }
     }
 
