@@ -90,42 +90,53 @@ let getAllBook = (id) => {
                 } 
             }
             if (id=="L12") {
-          const data = await Book.findAll({
-          where: { showing: 1 },
-          attributes: {
-          include: [
-            [
-              sequelize.fn('COUNT', sequelize.col('favorites.idfvbook')),
-              'favorite_count',
+                    const dataRaw = await Book.findAll({
+                        where: { showing: 1 },
+                        attributes: [
+                            'bookName',
+                            'price',
+                            'category',
+                            'description',
+                            'image',
+                            'author',
+                            [sequelize.fn('COUNT', sequelize.col('favorites.idfvbook')), 'favorite_count'],
+                        ],
+            include: [
+              {
+                model: FvBook,
+                as: 'favorites',
+                attributes: [],
+              },
             ],
-          ],
-        },
-        include: [
-          {
-            model: FvBook,
-            as: 'favorites',
-            attributes: [],
-          },
-        ],
-        group: ['Book.id'],
-        order: [[sequelize.literal('favorite_count'), 'DESC']],
-        limit: 12,
-        subQuery: false,
-        raw: true,
-      });
+            group: ['Book.id'],
+            order: [[sequelize.literal('favorite_count'), 'DESC']],
+            limit: 12,
+            subQuery: false,
+            raw: true,
+          });
 
-      if (data && data.length > 0) {
-        resolve({
-          errCode: 0,
-          errMessage: "Lấy danh sách sách yêu thích thành công",
-          data,
-        });
-      } else {
-        resolve({
-          errCode: 1,
-          errMessage: "Không có dữ liệu sách yêu thích",
-        });
-      }
+                    // Chỉ giữ 6 cột mong muốn (tên, giá, danh mục, description, tác giả, hình ảnh)
+                    const data = (dataRaw || []).map((r) => ({
+                        bookName: r.bookName,
+                        price: r.price,
+                        category: r.category,
+                        description: r.description,
+                        author: r.author,
+                        image: r.image,
+                    }));
+
+          if (data && data.length > 0) {
+            resolve({
+              errCode: 0,
+              errMessage: "Lấy danh sách sách yêu thích thành công",
+              data,
+            });
+          } else {
+            resolve({
+              errCode: 1,
+              errMessage: "Không có dữ liệu sách yêu thích",
+            });
+          }
             }
             if (id=="ALLSHOW") {
                 let data = await db.Book.findAll({
