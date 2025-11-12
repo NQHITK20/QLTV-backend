@@ -1,3 +1,31 @@
+// Lấy danh sách sách theo danh mục
+let getBooksByCategory = (categoryKey) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let books = await db.Book.findAll({
+                where: {
+                    category: categoryKey,
+                    showing: 1
+                },
+                attributes: ['id', 'bookName', 'author', 'category', 'price', 'image', 'description'],
+                order: [['createdAt', 'DESC']]
+            });
+            if (books && books.length > 0) {
+                resolve({
+                    errCode: 0,
+                    data: books
+                });
+            } else {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Không tìm thấy sách thuộc danh mục này.'
+                });
+            }
+        } catch (error) {
+            reject(error);
+        }
+    });
+};
 import { raw } from "body-parser";
 import { where } from "sequelize";
 const db = require('../models');
@@ -393,5 +421,5 @@ let searchBook = (tukhoa) => {
 
 module.exports = {
     createBook,getAllCategory,getAllBook,getRelatedBook,searchBook,
-    editBook,deleteBook,showHideBook,exportDataBook
+    editBook,deleteBook,showHideBook,exportDataBook,getBooksByCategory
 }

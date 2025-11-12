@@ -1,3 +1,17 @@
+// API lấy danh sách sách theo danh mục
+let getBooksByCategory = async (req, res) => {
+    try {
+        const categoryKey = req.body.category;
+        let data = await bookService.getBooksByCategory(categoryKey);
+        return res.status(200).json(data);
+    } catch (error) {
+        console.log(error);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Lỗi từ server'
+        });
+    }
+};
 import bookService from "../services/bookService"
 
 let createBook = async (req, res) => {
@@ -112,5 +126,5 @@ let searchBook = async (req,res) => {
 
 export default {
     createBook,getAllCategory,getAllBook,getRelatedBook,searchBook,
-    editBook,deleteBook,showHideBook,exportDataBook
+    editBook,deleteBook,showHideBook,exportDataBook,getBooksByCategory
 }
