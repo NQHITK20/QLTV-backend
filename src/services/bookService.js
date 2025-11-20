@@ -121,6 +121,7 @@ let getAllBook = (id) => {
                     const dataRaw = await Book.findAll({
                         where: { showing: 1 },
                         attributes: [
+                            'id',
                             'bookName',
                             'price',
                             'category',
@@ -145,6 +146,7 @@ let getAllBook = (id) => {
 
                     // Chỉ giữ 6 cột mong muốn (tên, giá, danh mục, description, tác giả, hình ảnh)
                     const data = (dataRaw || []).map((r) => ({
+                        id: r.id,
                         bookName: r.bookName,
                         price: r.price,
                         category: r.category,

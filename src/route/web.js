@@ -4,8 +4,8 @@ import bookController from "../controllers/bookcontroller";
 import categoryController from "../controllers/categoryController";
 import newController from "../controllers/newController";
 import fvbookController from "../controllers/fvbookController";
-import borrowUserController from "../controllers/borrowUserController";
-import borrowBookController from "../controllers/borrowBookController";
+import cartController from "../controllers/cartController";
+import userCartController from "../controllers/userCartController";
 import checkAuth from "../middleware/checkAuth";
 
 let Router = express.Router();
@@ -56,11 +56,13 @@ let initWebRoute = (app) => {
     Router.post('/api/check-fvbook',  fvbookController.checkFvBook);
     Router.post('/api/delete-fvbook',  fvbookController.deleteFvBook);
 
-    //BorrowUser
-    Router.post('/api/create-borrow-user',  borrowUserController.createBorrowUser);
+    // Orders / Persistent Cart
+    Router.post('/api/create-order-user',  cartController.checkout);
+    Router.post('/api/create-order-book',  cartController.checkout);
+    Router.post('/api/save-cart', checkAuth, userCartController.saveCart);
+    Router.get('/api/get-saved-cart', checkAuth, userCartController.getCart);
 
-    //BorrowBook
-    Router.post('/api/create-borrow-book',  borrowBookController.createBorrowBook);
+    
 
     return app.use("/", Router);
 };
