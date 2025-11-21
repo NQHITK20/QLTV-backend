@@ -2,28 +2,22 @@ const db = require('../models');
 
 const saveUserCart = async (userId, items, options = {}) => {
   // items: [{ bookId, bookcode, bookname, quantity, price }]
+  // Chỉ lưu vào cartitem (giỏ hàng tạm), không tạo cart (cart dùng cho đơn đã thanh toán)
   if (!userId) throw new Error('userId required');
   if (!Array.isArray(items)) throw new Error('items must be an array');
 
   const transaction = await db.sequelize.transaction();
   try {
-    // find existing pending cart
-    let cart = await db.cart.findOne({ where: { userId, status: 'pending' }, transaction });
-    if (!cart) {
-      const cartcode = options.cartcode || `CART-${Date.now()}`;
-      cart = await db.cart.create({ userId, cartcode, status: 'pending', total: 0 }, { transaction });
-    }
+    // Xóa items cũ của user này (giỏ hàng tạm)
+    await db.CartItem.destroy({ where: { userId, cartId: null }, transaction });
 
-    // remove existing items for the cart
-    await db.cartitem.destroy({ where: { cartId: cart.id }, transaction });
-
-    // enrich items (ensure numeric fields)
+    // Enrich items (ensure numeric fields)
     const itemsToInsert = items.map(it => {
       const qty = Number(it.quantity) || 1;
       const price = it.price != null ? Number(it.price) : null;
       const subtotal = price != null ? (qty * price) : null;
       return {
-        cartId: cart.id,
+        cartId: null, // Không gắn với cart nào (giỏ hàng tạm)
         userId,
         bookId: it.bookId || null,
         bookcode: it.bookcode || null,
@@ -34,9 +28,9 @@ const saveUserCart = async (userId, items, options = {}) => {
       };
     });
 
-    await db.cartitem.bulkCreate(itemsToInsert, { transaction });
+    await db.CartItem.bulkCreate(itemsToInsert, { transaction });
 
-    // compute total from subtotals (if available) else sum quantity
+    // Tính total
     let total = 0;
     if (itemsToInsert.some(i => i.subtotal != null)) {
       total = itemsToInsert.reduce((s, it) => s + (Number(it.subtotal) || 0), 0);
@@ -44,11 +38,8 @@ const saveUserCart = async (userId, items, options = {}) => {
       total = itemsToInsert.reduce((s, it) => s + (Number(it.quantity) || 0), 0);
     }
 
-    cart.total = total;
-    await cart.save({ transaction });
-
     await transaction.commit();
-    return { errCode: 0, message: 'Cart saved', data: { cartId: cart.id, cartcode: cart.cartcode, total } };
+    return { errCode: 0, message: 'Cart saved', data: { total, itemCount: itemsToInsert.length } };
   } catch (error) {
     await transaction.rollback();
     throw error;
@@ -57,8 +48,9 @@ const saveUserCart = async (userId, items, options = {}) => {
 
 const getUserCart = async (userId) => {
   if (!userId) throw new Error('userId required');
-  const cart = await db.cart.findOne({ where: { userId, status: 'pending' }, include: [{ model: db.cartitem, as: 'items' }] });
-  return cart;
+  // Lấy items tạm (chưa thanh toán) - cartId = null
+  const items = await db.CartItem.findAll({ where: { userId, cartId: null } });
+  return items;
 };
 
 module.exports = { saveUserCart, getUserCart };
