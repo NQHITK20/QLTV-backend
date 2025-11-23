@@ -5,8 +5,22 @@ let saveCart = async (req, res) => {
     // Lấy userId từ token hoặc body (fallback cho dev)
     const userId = req.user?.id || req.body.userId || req.query.userId;
     if (!userId) return res.status(200).json({ errCode: 1, errMessage: 'Vui lòng đăng nhập hoặc gửi userId' });
-    const items = req.body.items;
-    if (!Array.isArray(items)) return res.status(200).json({ errCode: 1, errMessage: 'items phải là mảng' });
+    // Support both: items array OR single-item fields (bookId, bookcode, bookName, quantity, price, image)
+    let items = req.body.items;
+    if (!Array.isArray(items)) {
+      // Try to build single-item from body fields
+      const bookId = req.body.bookId || req.body.bookid || null;
+      const bookcode = req.body.bookcode || req.body.bookCode || null;
+      const bookname = req.body.bookName || req.body.bookname || null;
+      const quantity = req.body.qty || req.body.quantity || 1;
+      const price = req.body.price != null ? req.body.price : (req.body.priCe || null);
+      const image = req.body.image || null;
+      if (bookId || bookcode || bookname) {
+        items = [{ bookId: bookId ? Number(bookId) : null, bookcode, bookname, quantity: Number(quantity) || 1, price: price != null ? Number(price) : null, image }];
+      } else {
+        return res.status(200).json({ errCode: 1, errMessage: 'items phải là mảng hoặc gửi bookId/bookcode/bookName' });
+      }
+    }
 
     const result = await userCartService.saveUserCart(userId, items, { cartcode: req.body.cartcode });
     return res.status(200).json(result);
@@ -18,8 +32,8 @@ let saveCart = async (req, res) => {
 
 let getCart = async (req, res) => {
   try {
-    // Lấy userId từ token hoặc query (fallback cho dev)
-    const userId = req.user?.id || req.query.userId;
+    // Lấy userId từ token, query hoặc body (hỗ trợ POST testing qua Postman)
+    const userId = req.user?.id || req.query.userId || req.body?.userId;
     if (!userId) return res.status(200).json({ errCode: 1, errMessage: 'Vui lòng đăng nhập hoặc gửi userId' });
     const cart = await userCartService.getUserCart(userId);
     return res.status(200).json({ errCode: 0, data: cart });

@@ -4,7 +4,7 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Cart extends Model {
     static associate(models) {
-      Cart.hasMany(models.CartItem, { foreignKey: 'cartId', as: 'items' });
+      // Cart-items relationship removed because CartItem no longer stores cartId
       Cart.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
     }
   }

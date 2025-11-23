@@ -8,38 +8,57 @@ const saveUserCart = async (userId, items, options = {}) => {
 
   const transaction = await db.sequelize.transaction();
   try {
-    // Xóa items cũ của user này (giỏ hàng tạm)
-    await db.CartItem.destroy({ where: { userId, cartId: null }, transaction });
+    // Thay vì xóa toàn bộ giỏ tạm, chúng ta sẽ gộp (upsert) từng item.
+    // Nếu item cùng bookId tồn tại -> cộng số lượng; nếu không -> tạo mới.
+    const processedItems = [];
 
-    // Enrich items (ensure numeric fields)
-    const itemsToInsert = items.map(it => {
+    for (const it of items) {
       const qty = Number(it.quantity) || 1;
       const price = it.price != null ? Number(it.price) : null;
       const subtotal = price != null ? (qty * price) : null;
-      return {
-        cartId: null, // Không gắn với cart nào (giỏ hàng tạm)
-        userId,
-        bookId: it.bookId || null,
-        bookcode: it.bookcode || null,
-        bookname: it.bookname || null,
-        quantity: qty,
-        price,
-        subtotal
-      };
-    });
 
-    await db.CartItem.bulkCreate(itemsToInsert, { transaction });
+      // Nếu có bookId, tìm item hiện tại của user
+      let existing = null;
+      if (it.bookId) {
+        existing = await db.CartItem.findOne({ where: { userId, bookId: it.bookId }, transaction });
+      }
 
-    // Tính total
+      if (existing) {
+        // Cập nhật số lượng (cộng) và subtotal/price nếu cần
+        const newQty = (Number(existing.quantity) || 0) + qty;
+        const newPrice = price != null ? price : existing.price;
+        const newSubtotal = newPrice != null ? (newQty * newPrice) : null;
+        // also update image if provided
+        const newImage = it.image != null ? it.image : existing.image;
+        await existing.update({ quantity: newQty, price: newPrice, subtotal: newSubtotal, image: newImage }, { transaction });
+        processedItems.push(existing);
+      } else {
+        // Tạo mới
+        const created = await db.CartItem.create({
+          userId,
+          bookId: it.bookId || null,
+          bookcode: it.bookcode || null,
+          bookname: it.bookname || null,
+          image: it.image || null,
+          quantity: qty,
+          price,
+          subtotal
+        }, { transaction });
+        processedItems.push(created);
+      }
+    }
+
+    // Tính tổng cho user: lấy tất cả item hiện tại
+    const allItems = await db.CartItem.findAll({ where: { userId }, transaction });
     let total = 0;
-    if (itemsToInsert.some(i => i.subtotal != null)) {
-      total = itemsToInsert.reduce((s, it) => s + (Number(it.subtotal) || 0), 0);
+    if (allItems.some(i => i.subtotal != null)) {
+      total = allItems.reduce((s, it) => s + (Number(it.subtotal) || 0), 0);
     } else {
-      total = itemsToInsert.reduce((s, it) => s + (Number(it.quantity) || 0), 0);
+      total = allItems.reduce((s, it) => s + (Number(it.quantity) || 0), 0);
     }
 
     await transaction.commit();
-    return { errCode: 0, message: 'Cart saved', data: { total, itemCount: itemsToInsert.length } };
+    return { errCode: 0, message: 'Cart saved', data: { total, itemCount: allItems.length } };
   } catch (error) {
     await transaction.rollback();
     throw error;
@@ -48,8 +67,8 @@ const saveUserCart = async (userId, items, options = {}) => {
 
 const getUserCart = async (userId) => {
   if (!userId) throw new Error('userId required');
-  // Lấy items tạm (chưa thanh toán) - cartId = null
-  const items = await db.CartItem.findAll({ where: { userId, cartId: null } });
+  // Lấy items tạm (chưa thanh toán)
+  const items = await db.CartItem.findAll({ where: { userId } });
   return items;
 };
 

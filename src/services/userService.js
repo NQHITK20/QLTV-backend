@@ -148,11 +148,13 @@ let handleUserLogin = (email, password) => {
                         delete user.password;
                         userData.user = user;
                         const payload = {
+                            id: user.id,
                             name: user.lastName,
-                            role: user.roleId
+                            role: user.roleId,
+                            email: user.email
                         };
                         if (payload.role === "2" || payload.role === "3") {
-                        userData.token =  jwt.sign(payload, process.env.JWT, { expiresIn: '10000h' });
+                            userData.token = jwt.sign(payload, process.env.JWT, { expiresIn: '10000h' });
                         }
                     } else {
                         userData.errCode = 3;

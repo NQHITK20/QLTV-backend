@@ -56,8 +56,8 @@ let initWebRoute = (app) => {
     Router.post('/api/delete-fvbook',  fvbookController.deleteFvBook);
 
     // Cart
-    Router.post('/api/save-cart', checkAuth, userCartController.saveCart);
-    Router.get('/api/get-saved-cart', checkAuth, userCartController.getCart);
+        Router.post('/api/save-cart', checkAuth, userCartController.saveCart);
+        Router.post('/api/get-saved-cart', userCartController.getCart);
 
     
 

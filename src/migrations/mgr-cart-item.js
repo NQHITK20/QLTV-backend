@@ -8,10 +8,10 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      cartId: { type: Sequelize.INTEGER, allowNull: true },
       userId: { type: Sequelize.INTEGER, allowNull: false },
       bookId: { type: Sequelize.INTEGER, allowNull: true },
       bookcode: { type: Sequelize.STRING, allowNull: true },
+      image: { type: Sequelize.STRING, allowNull: true },
       bookname: { type: Sequelize.STRING, allowNull: true },
       quantity: { type: Sequelize.INTEGER, allowNull: false, defaultValue: 1 },
       price: { type: Sequelize.DECIMAL(10,2), allowNull: true },
