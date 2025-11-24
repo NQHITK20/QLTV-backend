@@ -72,4 +72,73 @@ const getUserCart = async (userId) => {
   return items;
 };
 
-module.exports = { saveUserCart, getUserCart };
+
+// Trả về top 3 mục trong giỏ hàng (mới nhất) cùng tổng số mục
+const getCart3 = async (userId) => {
+  if (!userId) throw new Error('userId required');
+
+  // Lấy 3 mục mới nhất
+  const topItems = await db.CartItem.findAll({ where: { userId }, limit: 3, order: [['createdAt', 'DESC']] });
+
+  // Đếm tổng số mục
+  const allItems = await db.CartItem.findAll({ where: { userId } });
+  const itemCount = allItems.length;
+
+  const results = [];
+  for (const ci of topItems) {
+    try {
+      if (ci.bookId) {
+        // Nếu có liên kết bookId, lấy thông tin sách từ bảng Book
+        const book = await db.Book.findOne({ where: { id: ci.bookId } });
+        if (book) {
+          results.push(book);
+          continue;
+        }
+      }
+
+      // Nếu không có bookId hoặc không tìm thấy Book, trả về dữ liệu từ cartitem
+      results.push({
+        bookId: ci.bookId || null,
+        bookcode: ci.bookcode || null,
+        bookname: ci.bookname || null,
+        image: ci.image || null,
+        quantity: ci.quantity || null,
+        price: ci.price || null,
+        subtotal: ci.subtotal || null
+      });
+    } catch (error) {
+      console.error('Error loading cart item book:', error);
+    }
+  }
+
+  return { errCode: 0, results, itemCount };
+};
+
+// Xóa một cart item theo cartItem id (yêu cầu cartItemId)
+const deleteCartItem = async (userId, cartItemId) => {
+  if (!userId) throw new Error('userId required');
+  if (!cartItemId && cartItemId !== 0) throw new Error('cartItemId required');
+
+  // Support special flag: if cartItemId is string 'ALL' (case-insensitive), delete all items for user
+  if (String(cartItemId).toUpperCase() === 'ALL') {
+    await db.CartItem.destroy({ where: { userId } });
+    return { errCode: 0, message: 'Deleted all', itemCount: 0 };
+  }
+
+  const idNum = Number(cartItemId);
+  if (!Number.isFinite(idNum) || idNum <= 0) return { errCode: 1, errMessage: 'Invalid cartItemId' };
+
+  const item = await db.CartItem.findOne({ where: { userId, id: idNum } });
+  if (!item) return { errCode: 1, errMessage: 'Cart item not found' };
+
+  // Use Model.destroy with where clause instead of calling instance.destroy()
+  // because in some environments the found object may be a plain object
+  // and won't have instance methods. This avoids "item.destroy is not a function".
+  await db.CartItem.destroy({ where: { userId, id: idNum } });
+
+  // Return remaining count
+  const remainingCount = await db.CartItem.count({ where: { userId } });
+  return { errCode: 0, message: 'Deleted', itemCount: remainingCount };
+};
+
+module.exports = { saveUserCart, getUserCart, getCart3, deleteCartItem };

@@ -58,6 +58,8 @@ let initWebRoute = (app) => {
     // Cart
         Router.post('/api/save-cart', checkAuth, userCartController.saveCart);
         Router.post('/api/get-saved-cart', userCartController.getCart);
+        Router.post('/api/get-cart3', userCartController.getCart3);
+        Router.post('/api/delete-cartitem', checkAuth, userCartController.deleteCartItem);
 
     
 

@@ -43,4 +43,36 @@ let getCart = async (req, res) => {
   }
 };
 
-export default { saveCart, getCart };
+let getCart3 = async (req, res) => {
+  try {
+    // Lấy userId từ token, query hoặc body
+    const userId = req.user?.id || req.body?.userId || req.query?.userId;
+    if (!userId) return res.status(200).json({ errCode: 1, errMessage: 'Vui lòng đăng nhập hoặc gửi userId' });
+    const data = await userCartService.getCart3(userId);
+    return res.status(200).json(data);
+  } catch (error) {
+    console.error(error);
+    return res.status(200).json({ errCode: -1, errMessage: 'Lỗi server' });
+  }
+};
+
+let deleteCartItem = async (req, res) => {
+  try {
+    const userId = req.user?.id || req.body.userId || req.query.userId;
+    if (!userId) return res.status(200).json({ errCode: 1, errMessage: 'Vui lòng đăng nhập hoặc gửi userId' });
+
+    // Require cartItemId (id of cartitem) to delete
+    const cartItemId = req.body.cartItemId || req.body.id || null;
+    if (!cartItemId) return res.status(200).json({ errCode: 1, errMessage: 'cartItemId is required' });
+
+    // Pass raw value so service can accept special flags like 'ALL'
+    const rawId = cartItemId;
+    const result = await userCartService.deleteCartItem(userId, rawId);
+    return res.status(200).json(result);
+  } catch (error) {
+    console.error(error);
+    return res.status(200).json({ errCode: -1, errMessage: 'Lỗi server' });
+  }
+};
+
+export default { saveCart, getCart, getCart3, deleteCartItem };
