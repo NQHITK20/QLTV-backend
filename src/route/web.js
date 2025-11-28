@@ -5,6 +5,8 @@ import categoryController from "../controllers/categoryController";
 import newController from "../controllers/newController";
 import fvbookController from "../controllers/fvbookController";
 import userCartController from "../controllers/userCartController";
+import orderController from "../controllers/orderController";
+import paymentController from "../controllers/paymentController";
 import checkAuth from "../middleware/checkAuth";
 
 let Router = express.Router();
@@ -60,6 +62,14 @@ let initWebRoute = (app) => {
         Router.post('/api/get-saved-cart', userCartController.getCart);
         Router.post('/api/get-cart3', userCartController.getCart3);
         Router.post('/api/delete-cartitem', checkAuth, userCartController.deleteCartItem);
+
+        // Orders
+        Router.post('/api/orders/create', checkAuth, orderController.createOrder);
+        
+
+        // Payments
+        Router.post('/api/payments/create', checkAuth, paymentController.createPayment);
+        
 
     
 

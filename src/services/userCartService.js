@@ -29,9 +29,15 @@ const saveUserCart = async (userId, items, options = {}) => {
         const newPrice = price != null ? price : existing.price;
         const newSubtotal = newPrice != null ? (newQty * newPrice) : null;
         // also update image if provided
-        const newImage = it.image != null ? it.image : existing.image;
-        await existing.update({ quantity: newQty, price: newPrice, subtotal: newSubtotal, image: newImage }, { transaction });
-        processedItems.push(existing);
+        const newImage = it.image != null ? it.image : (existing.image || null);
+        // Use Model.update with where clause to avoid calling instance.update on a plain object
+        await db.CartItem.update(
+          { quantity: newQty, price: newPrice, subtotal: newSubtotal, image: newImage },
+          { where: { id: existing.id }, transaction }
+        );
+        // Re-fetch the updated row to obtain a model instance (or current data)
+        const updated = await db.CartItem.findOne({ where: { id: existing.id }, transaction });
+        processedItems.push(updated);
       } else {
         // Tạo mới
         const created = await db.CartItem.create({
