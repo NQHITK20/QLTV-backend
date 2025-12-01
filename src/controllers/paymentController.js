@@ -161,14 +161,6 @@ let capturePayment = async (req, res) => {
     if (!order && providerPaymentId) order = await db.Order.findOne({ where: { providerPaymentId } });
     if (!order) return res.status(404).json({ errCode: 1, errMessage: 'Order not found' });
 
-    // If request is authenticated, ensure user owns the order
-    try {
-      const requestingUserId = req.user?.id || null;
-      if (requestingUserId && order.userId && String(requestingUserId) !== String(order.userId)) {
-        return res.status(403).json({ errCode: 1, errMessage: 'Forbidden: you do not own this order' });
-      }
-    } catch (e) { /* ignore */ }
-
     if (order.status === 'paid') return res.status(200).json({ errCode: 0, message: 'Order already paid', orderId: order.id });
 
     const clientId = process.env.PAYPAL_CLIENT_ID;

@@ -74,7 +74,7 @@ const markPaid = (orderId, providerInfo = {}) => {
     if (!orderId) return reject(new Error('orderId required'));
     const transaction = await db.sequelize.transaction();
     try {
-      const order = await db.Order.findOne({ where: { id: orderId }, transaction });
+      const order = await db.Order.findOne({ where: { id: orderId }, transaction, raw: false });
       if (!order) throw new Error('Order not found');
       order.status = 'paid';
       order.providerPaymentId = providerInfo.providerPaymentId || order.providerPaymentId;
@@ -99,7 +99,7 @@ const saveProviderInfo = (orderId, providerInfo = {}) => {
     if (!orderId) return reject(new Error('orderId required'));
     const transaction = await db.sequelize.transaction();
     try {
-      const order = await db.Order.findOne({ where: { id: orderId }, transaction });
+      const order = await db.Order.findOne({ where: { id: orderId }, transaction, raw: false });
       if (!order) throw new Error('Order not found');
       order.providerPaymentId = providerInfo.providerPaymentId || order.providerPaymentId;
       order.metadata = Object.assign({}, order.metadata || {}, providerInfo.raw || {});
