@@ -69,6 +69,9 @@ let initWebRoute = (app) => {
 
         // Payments
         Router.post('/api/payments/create', checkAuth, paymentController.createPayment);
+        Router.post('/api/payments/capture', checkAuth, paymentController.capturePayment);
+        // PayPal webhook (unprotected endpoint)
+        Router.post('/api/payments/webhook/paypal', paymentController.webhookPayPal);
         
 
     

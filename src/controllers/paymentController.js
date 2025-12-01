@@ -1,9 +1,37 @@
 import orderService from '../services/orderService';
 
-// Helper: build PayPal purchase_units from items
-function buildPurchaseUnits(items, currency='VND'){
-  const amountValue = items.reduce((s,it)=>s + (Number(it.quantity||1) * Number(it.unitPrice||0)), 0);
-  return [{ amount: { currency_code: currency, value: String(amountValue) }, items: items.map(it=>({ name: it.bookname || it.bookCode || it.bookcode || 'Item', unit_amount: { currency_code: currency, value: String(it.unitPrice||0) }, quantity: String(it.quantity||1) })) }];
+// Helper: build PayPal purchase_units from items with proper amount.breakdown
+function toFixedString(n) {
+  return Number(n || 0).toFixed(2);
+}
+
+function buildPurchaseUnits(items = [], shipping = 0, tax = 0, currency = 'USD') {
+  const itemsFormatted = (items || []).map(it => ({
+    name: it.bookname || it.name || it.bookName || 'Item',
+    unit_amount: { currency_code: currency, value: toFixedString(it.unitPrice || it.unit_amount || it.price || 0) },
+    quantity: String(it.quantity || it.qty || 1)
+  }));
+
+  const itemTotal = (items || []).reduce((s, it) => s + (Number(it.unitPrice || it.unit_amount || it.price || 0) * Number(it.quantity || it.qty || 1)), 0);
+  const shippingNum = Number(shipping || 0);
+  const taxNum = Number(tax || 0);
+  const total = itemTotal + shippingNum + taxNum;
+
+  return [
+    {
+      reference_id: 'default',
+      amount: {
+        currency_code: currency,
+        value: toFixedString(total),
+        breakdown: {
+          item_total: { currency_code: currency, value: toFixedString(itemTotal) },
+          shipping: { currency_code: currency, value: toFixedString(shippingNum) },
+          tax_total: { currency_code: currency, value: toFixedString(taxNum) }
+        }
+      },
+      items: itemsFormatted
+    }
+  ];
 }
 
 let createPayment = async (req, res) => {
@@ -40,16 +68,38 @@ let createPayment = async (req, res) => {
         if (!accessToken) throw new Error('No PayPal access token');
 
         // Create PayPal order
-        const purchase_units = buildPurchaseUnits(items, 'USD'); // PayPal expects supported currency; adjust as needed
+          const currency = process.env.PAYPAL_CURRENCY || 'USD';
+          const purchase_units = buildPurchaseUnits(items, shipping, tax, currency); // PayPal expects supported currency; adjust as needed
+        // Build application_context with return/cancel URLs (can be configured via env)
+        // Determine return/cancel URLs. Priority: explicit PAYPAL_RETURN_URL/CANCEL, then FRONTEND_URL, then localhost fallback.
+        const port = process.env.PORT || '3000';
+        const frontendBase = (process.env.FRONTEND_URL && process.env.FRONTEND_URL.replace(/\/$/, '')) || `http://localhost:${port}`;
+        let returnUrl = (process.env.PAYPAL_RETURN_URL && process.env.PAYPAL_RETURN_URL) || `http://localhost/QLTV-ChatboxAi/frontend/admin-ui/paypal-return.html`;
+        let cancelUrl = (process.env.PAYPAL_CANCEL_URL && process.env.PAYPAL_CANCEL_URL) || `http://localhost/QLTV-ChatboxAi/frontend/admin-ui/paypal-cancel.html`;
+        // append local order id so the return page can correlate the PayPal token with our DB order
+        try {
+          const rSep = returnUrl.includes('?') ? '&' : '?';
+          const cSep = cancelUrl.includes('?') ? '&' : '?';
+          returnUrl = `${returnUrl}${rSep}localOrderId=${encodeURIComponent(order.id)}`;
+          cancelUrl = `${cancelUrl}${cSep}localOrderId=${encodeURIComponent(order.id)}`;
+        } catch (e) { /* ignore */ }
+
+        const createBody = { intent: 'CAPTURE', purchase_units };
+        if (returnUrl || cancelUrl) {
+          createBody.application_context = {};
+          if (returnUrl) createBody.application_context.return_url = returnUrl;
+          if (cancelUrl) createBody.application_context.cancel_url = cancelUrl;
+        }
+
         const createRes = await fetch((mode==='live'?'https://api-m.paypal.com':'https://api-m.sandbox.paypal.com') + '/v2/checkout/orders', {
           method: 'POST',
           headers: { 'Content-Type':'application/json', 'Authorization': 'Bearer ' + accessToken },
-          body: JSON.stringify({ intent: 'CAPTURE', purchase_units })
+          body: JSON.stringify(createBody)
         });
         const createJson = await createRes.json();
         const providerPaymentId = createJson.id;
-        // Save providerPaymentId into order metadata (best-effort)
-        try { await orderService.markPaid(order.id, { providerPaymentId, raw: createJson }); } catch(e){ /* don't block response */ }
+        // Save providerPaymentId into order metadata (best-effort) BUT DO NOT mark as paid here
+        try { await orderService.saveProviderInfo(order.id, { providerPaymentId, raw: createJson }); } catch(e){ /* don't block response */ }
 
         // find approval link
         const approval = (createJson.links||[]).find(l=>l.rel==='approve');
@@ -61,8 +111,10 @@ let createPayment = async (req, res) => {
     }
 
     // If no PayPal creds or real API failed, return a mock approval URL so frontend can be tested
+    const mockProviderId = 'MOCK-' + order.id;
+    try { await orderService.saveProviderInfo(order.id, { providerPaymentId: mockProviderId, raw: { mock: true } }); } catch(e){ /* ignore */ }
     const mockUrl = `/mock-paypal-approve?orderId=${order.id}`;
-    return res.status(200).json({ errCode: 0, approvalUrl: mockUrl, providerPaymentId: 'MOCK-' + order.id });
+    return res.status(200).json({ errCode: 0, approvalUrl: mockUrl, providerPaymentId: mockProviderId });
   } catch (error) {
     console.error('createPayment error', error);
     return res.status(200).json({ errCode: -1, errMessage: 'Lỗi khởi tạo thanh toán' });
@@ -94,4 +146,75 @@ let webhookPayPal = async (req, res) => {
   }
 };
 
-export default { createPayment, webhookPayPal };
+let capturePayment = async (req, res) => {
+  try {
+    const body = req.body || {};
+    const providerPaymentId = body.providerPaymentId || body.token || body.orderID || body.orderId || null;
+    const localOrderId = body.localOrderId || body.orderId || body.local_order_id || null;
+
+    if (!providerPaymentId && !localOrderId) return res.status(400).json({ errCode: 1, errMessage: 'providerPaymentId or localOrderId required' });
+
+    // find order either by local id or by providerPaymentId
+    const db = require('../models');
+    let order = null;
+    if (localOrderId) order = await db.Order.findOne({ where: { id: localOrderId } });
+    if (!order && providerPaymentId) order = await db.Order.findOne({ where: { providerPaymentId } });
+    if (!order) return res.status(404).json({ errCode: 1, errMessage: 'Order not found' });
+
+    // If request is authenticated, ensure user owns the order
+    try {
+      const requestingUserId = req.user?.id || null;
+      if (requestingUserId && order.userId && String(requestingUserId) !== String(order.userId)) {
+        return res.status(403).json({ errCode: 1, errMessage: 'Forbidden: you do not own this order' });
+      }
+    } catch (e) { /* ignore */ }
+
+    if (order.status === 'paid') return res.status(200).json({ errCode: 0, message: 'Order already paid', orderId: order.id });
+
+    const clientId = process.env.PAYPAL_CLIENT_ID;
+    const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
+    const mode = process.env.PAYPAL_MODE || 'sandbox';
+    if (!clientId || !clientSecret) return res.status(500).json({ errCode: -1, errMessage: 'PayPal credentials not configured' });
+
+    // get access token
+    const tokenRes = await fetch((mode==='live'?'https://api-m.paypal.com':'https://api-m.sandbox.paypal.com') + '/v1/oauth2/token', {
+      method: 'POST',
+      headers: { 'Authorization': 'Basic ' + Buffer.from(clientId + ':' + clientSecret).toString('base64'), 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'grant_type=client_credentials'
+    });
+    const tokenJson = await tokenRes.json();
+    const accessToken = tokenJson.access_token;
+    if (!accessToken) return res.status(500).json({ errCode: -1, errMessage: 'Cannot obtain PayPal access token', raw: tokenJson });
+
+    // call capture
+    const targetOrderId = providerPaymentId || order.providerPaymentId;
+    const capRes = await fetch((mode==='live'?'https://api-m.paypal.com':'https://api-m.sandbox.paypal.com') + `/v2/checkout/orders/${targetOrderId}/capture`, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization': 'Bearer ' + accessToken }
+    });
+    const capJson = await capRes.json();
+    if (!capRes.ok) {
+      return res.status(400).json({ errCode: -1, errMessage: 'Capture failed', raw: capJson });
+    }
+
+    // determine success from response
+    const captured = (capJson.status && (capJson.status === 'COMPLETED')) ||
+      ((capJson.purchase_units || [])[0] && ((capJson.purchase_units[0].payments && capJson.purchase_units[0].payments.captures && capJson.purchase_units[0].payments.captures[0] && (capJson.purchase_units[0].payments.captures[0].status === 'COMPLETED'))));
+
+    if (captured) {
+      try {
+        await orderService.markPaid(order.id, { providerPaymentId: targetOrderId, raw: capJson });
+      } catch (e) { console.error('markPaid error', e); }
+
+      const redirectUrl = `/QLTV-ChatboxAi/frontend/index.php?orderId=${order.id}`;
+      return res.status(200).json({ errCode: 0, message: 'Capture successful', capture: capJson, orderId: order.id, redirectUrl });
+    }
+
+    return res.status(400).json({ errCode: -1, errMessage: 'Capture did not return completed status', raw: capJson });
+  } catch (error) {
+    console.error('capturePayment error', error);
+    return res.status(500).json({ errCode: -1, errMessage: 'Capture error', raw: (error && error.message) ? { message: error.message } : null });
+  }
+};
+
+export default { createPayment, webhookPayPal, capturePayment };

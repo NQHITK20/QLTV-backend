@@ -90,3 +90,27 @@ const markPaid = (orderId, providerInfo = {}) => {
 };
 
 module.exports = { createOrder, markPaid };
+
+/**
+ * Save provider information (providerPaymentId and raw metadata) without changing order status.
+ */
+const saveProviderInfo = (orderId, providerInfo = {}) => {
+  return new Promise(async (resolve, reject) => {
+    if (!orderId) return reject(new Error('orderId required'));
+    const transaction = await db.sequelize.transaction();
+    try {
+      const order = await db.Order.findOne({ where: { id: orderId }, transaction });
+      if (!order) throw new Error('Order not found');
+      order.providerPaymentId = providerInfo.providerPaymentId || order.providerPaymentId;
+      order.metadata = Object.assign({}, order.metadata || {}, providerInfo.raw || {});
+      await order.save({ transaction });
+      await transaction.commit();
+      return resolve({ errCode: 0, order });
+    } catch (err) {
+      try { if (transaction && !transaction.finished) await transaction.rollback(); } catch(e) { /* ignore rollback errors */ }
+      return reject(err);
+    }
+  });
+};
+
+module.exports = { createOrder, markPaid, saveProviderInfo }; 

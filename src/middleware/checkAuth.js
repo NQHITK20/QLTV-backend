@@ -1,14 +1,28 @@
 const jwt = require('jsonwebtoken');
 
 const checkAuth = (req, res, next) => {
-    const token = req.headers['authorization'];
+    // Accept token via Authorization header or via cookie named 'token'
+    let tokenHeader = req.headers['authorization'];
+    if (!tokenHeader && req.headers && req.headers.cookie) {
+        // parse cookies manually to find 'token'
+        const cookieHeader = req.headers.cookie; // e.g. 'a=1; token=xxx; b=2'
+        const parts = cookieHeader.split(';').map(c => c.trim());
+        for (const p of parts) {
+            if (p.startsWith('token=')) {
+                const cookieVal = p.substring('token='.length);
+                // Treat cookie value as a Bearer token
+                tokenHeader = 'Bearer ' + cookieVal;
+                break;
+            }
+        }
+    }
 
-    if (!token) {
+    if (!tokenHeader) {
         return res.status(401).json({ message: 'Không có token, từ chối truy cập' });
     }
 
     try {
-        const tokenParts = token.split(' ');
+        const tokenParts = tokenHeader.split(' ');
         if (tokenParts.length !== 2 || tokenParts[0] !== 'Bearer') {
             return res.status(401).json({ message: 'Token không hợp lệ' });
         }
