@@ -274,6 +274,7 @@ let editBook = (data) => {
                     book.description = data.description
                     book.image = data.image
                     book.soLuong = data.soLuong
+                    book.price = data.price
                     await book.save();
                     resolve({
                         errCode: 0,
