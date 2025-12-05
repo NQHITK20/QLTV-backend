@@ -36,12 +36,11 @@ const createOrder = (payload = {}) => {
           idempotencyKey: idempotencyKey || null
         }, { transaction });
 
+        // Only include columns that exist in the `orderitems` table to avoid DB errors
         const itemsToCreate = items.map(it => ({
           orderId: order.id,
           bookId: it.bookId || null,
-          bookcode: it.bookcode || it.bookCode || null,
           bookname: it.bookname || it.bookName || null,
-          image: it.image || null,
           quantity: Number(it.quantity || it.qty || 1),
           unitPrice: it.unitPrice != null ? it.unitPrice : (it.price != null ? it.price : null),
           subtotal: (Number(it.quantity || it.qty || 1) * (Number(it.unitPrice || it.price) || 0))
@@ -53,9 +52,11 @@ const createOrder = (payload = {}) => {
 
         // Read created order within the same transaction to avoid post-commit errors
         // Force non-raw result so included associations return model instances
-        const created = await db.Order.findOne({ where: { id: order.id }, include: [{ model: db.OrderItem, as: 'items' }], transaction, raw: false });
-        await transaction.commit();
-        return resolve({ existing: false, order: created });
+          const created = await db.Order.findOne({ where: { id: order.id }, include: [{ model: db.OrderItem, as: 'items' }], transaction, raw: false });
+          await transaction.commit();
+          // convert instance to plain object for callers
+          const outOrder = (created && typeof created.get === 'function') ? created.get({ plain: true }) : created;
+          return resolve({ existing: false, order: outOrder });
       } catch (err) {
         try { if (transaction && !transaction.finished) await transaction.rollback(); } catch(e) { /* ignore rollback errors */ }
         return reject(err);
@@ -81,7 +82,8 @@ const markPaid = (orderId, providerInfo = {}) => {
       order.metadata = Object.assign({}, order.metadata || {}, providerInfo.raw || {});
       await order.save({ transaction });
       await transaction.commit();
-      return resolve({ errCode: 0, order });
+        const outOrder = (order && typeof order.get === 'function') ? order.get({ plain: true }) : order;
+        return resolve({ errCode: 0, order: outOrder });
     } catch (err) {
       try { if (transaction && !transaction.finished) await transaction.rollback(); } catch(e) { /* ignore rollback errors */ }
       return reject(err);
@@ -105,7 +107,8 @@ const saveProviderInfo = (orderId, providerInfo = {}) => {
       order.metadata = Object.assign({}, order.metadata || {}, providerInfo.raw || {});
       await order.save({ transaction });
       await transaction.commit();
-      return resolve({ errCode: 0, order });
+        const outOrder = (order && typeof order.get === 'function') ? order.get({ plain: true }) : order;
+        return resolve({ errCode: 0, order: outOrder });
     } catch (err) {
       try { if (transaction && !transaction.finished) await transaction.rollback(); } catch(e) { /* ignore rollback errors */ }
       return reject(err);

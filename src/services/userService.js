@@ -153,7 +153,7 @@ let handleUserLogin = (email, password) => {
                             role: user.roleId,
                             email: user.email
                         };
-                        if (payload.role === "2" || payload.role === "3") {
+                        if (payload.role === "2" || payload.role === "3" || payload.role === "1") {
                             userData.token = jwt.sign(payload, process.env.JWT, { expiresIn: '10000h' });
                         }
                     } else {

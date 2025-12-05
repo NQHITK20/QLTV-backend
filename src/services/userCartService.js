@@ -1,7 +1,6 @@
 const db = require('../models');
 
 const saveUserCart = async (userId, items, options = {}) => {
-  // items: [{ bookId, bookcode, bookname, quantity, price }]
   // Chỉ lưu vào cartitem (giỏ hàng tạm), không tạo cart (cart dùng cho đơn đã thanh toán)
   if (!userId) throw new Error('userId required');
   if (!Array.isArray(items)) throw new Error('items must be an array');
@@ -43,9 +42,7 @@ const saveUserCart = async (userId, items, options = {}) => {
         const created = await db.CartItem.create({
           userId,
           bookId: it.bookId || null,
-          bookcode: it.bookcode || null,
           bookname: it.bookname || null,
-          image: it.image || null,
           quantity: qty,
           price,
           subtotal
@@ -105,9 +102,7 @@ const getCart3 = async (userId) => {
       // Nếu không có bookId hoặc không tìm thấy Book, trả về dữ liệu từ cartitem
       results.push({
         bookId: ci.bookId || null,
-        bookcode: ci.bookcode || null,
         bookname: ci.bookname || null,
-        image: ci.image || null,
         quantity: ci.quantity || null,
         price: ci.price || null,
         subtotal: ci.subtotal || null
@@ -136,10 +131,6 @@ const deleteCartItem = async (userId, cartItemId) => {
 
   const item = await db.CartItem.findOne({ where: { userId, id: idNum } });
   if (!item) return { errCode: 1, errMessage: 'Cart item not found' };
-
-  // Use Model.destroy with where clause instead of calling instance.destroy()
-  // because in some environments the found object may be a plain object
-  // and won't have instance methods. This avoids "item.destroy is not a function".
   await db.CartItem.destroy({ where: { userId, id: idNum } });
 
   // Return remaining count

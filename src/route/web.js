@@ -7,6 +7,7 @@ import fvbookController from "../controllers/fvbookController";
 import userCartController from "../controllers/userCartController";
 import orderController from "../controllers/orderController";
 import paymentController from "../controllers/paymentController";
+import notificationController from "../controllers/notificationController";
 import checkAuth from "../middleware/checkAuth";
 
 let Router = express.Router();
@@ -72,6 +73,9 @@ let initWebRoute = (app) => {
         Router.post('/api/payments/capture', checkAuth, paymentController.capturePayment);
         // PayPal webhook (unprotected endpoint)
         Router.post('/api/payments/webhook/paypal', paymentController.webhookPayPal);
+
+        // Notifications (send order notification email)
+        Router.post('/api/notify/order', checkAuth, notificationController.notifyOrder);
         
 
     
