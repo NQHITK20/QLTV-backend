@@ -7,6 +7,7 @@ module.exports = {
       orderId: { type: Sequelize.BIGINT, allowNull: false },
       bookId: { type: Sequelize.INTEGER, allowNull: true },
       bookname: { type: Sequelize.STRING, allowNull: true },
+      image: { type: Sequelize.STRING, allowNull: true },
       quantity: { type: Sequelize.INTEGER, defaultValue: 1 },
       unitPrice: { type: Sequelize.DECIMAL(12,2), allowNull: true },
       subtotal: { type: Sequelize.DECIMAL(12,2), allowNull: true },

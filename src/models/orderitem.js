@@ -4,6 +4,7 @@ module.exports = (sequelize, DataTypes) => {
     orderId: { type: DataTypes.INTEGER, allowNull: false },
     bookId: DataTypes.INTEGER,
     bookname: DataTypes.STRING,
+    image: DataTypes.STRING,
     quantity: { type: DataTypes.INTEGER, defaultValue: 1 },
     unitPrice: DataTypes.DECIMAL(12,2),
     subtotal: DataTypes.DECIMAL(12,2)

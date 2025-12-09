@@ -41,6 +41,7 @@ const createOrder = (payload = {}) => {
           orderId: order.id,
           bookId: it.bookId || null,
           bookname: it.bookname || it.bookName || null,
+          image: it.image || null,
           quantity: Number(it.quantity || it.qty || 1),
           unitPrice: it.unitPrice != null ? it.unitPrice : (it.price != null ? it.price : null),
           subtotal: (Number(it.quantity || it.qty || 1) * (Number(it.unitPrice || it.price) || 0))

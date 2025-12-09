@@ -38,14 +38,16 @@ const saveUserCart = async (userId, items, options = {}) => {
         const updated = await db.CartItem.findOne({ where: { id: existing.id }, transaction });
         processedItems.push(updated);
       } else {
-        // Tạo mới
+        // Tạo mới (bao gồm bookcode và image nếu client gửi)
         const created = await db.CartItem.create({
           userId,
           bookId: it.bookId || null,
+          bookcode: it.bookcode || it.bookCode || null,
           bookname: it.bookname || null,
           quantity: qty,
           price,
-          subtotal
+          subtotal,
+          image: it.image || null
         }, { transaction });
         processedItems.push(created);
       }
