@@ -66,6 +66,7 @@ let initWebRoute = (app) => {
 
         // Orders
         Router.post('/api/orders/create', checkAuth, orderController.createOrder);
+        Router.post('/api/orders/get-order', checkAuth, orderController.getMyOrders);
         
 
         // Payments
@@ -78,7 +79,6 @@ let initWebRoute = (app) => {
         Router.post('/api/notify/order', checkAuth, notificationController.notifyOrder);
         
 
-    
 
     return app.use("/", Router);
 };

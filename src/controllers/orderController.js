@@ -1,4 +1,6 @@
 import orderService from '../services/orderService';
+import db from '../models';
+import { translatePaymentStatus } from '../utils/paymentStatus';
 
 let createOrder = async (req, res) => {
   try {
@@ -27,5 +29,62 @@ let createOrder = async (req, res) => {
   }
 };
 
-export default { createOrder };
+let getMyOrders = (req, res) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const userId = req.user?.id || req.body?.userId || req.query?.userId;
+      if (!userId) {
+        res.status(401).json({ errCode: 1, errMessage: 'Vui lòng đăng nhập' });
+        return resolve(null);
+      }
+
+      // Fetch orders and items in two queries to avoid Sequelize internal include bugs
+      const orders = await db.Order.findAll({
+        where: { userId },
+        order: [['createdAt', 'DESC']],
+        raw: true
+      });
+
+      const orderIds = orders.map(o => o.id).filter(Boolean);
+      let items = [];
+      if (orderIds.length) {
+        items = await db.OrderItem.findAll({ where: { orderId: orderIds }, raw: true });
+      }
+
+      const itemsByOrder = {};
+      for (const it of items) {
+        const oid = it.orderId;
+        if (!itemsByOrder[oid]) itemsByOrder[oid] = [];
+        itemsByOrder[oid].push(it);
+      }
+
+      // Map to a lightweight shape expected by the frontend orders table
+      const out = orders.map((o) => {
+        const plainItems = (itemsByOrder[o.id] || []).map(it => ({
+          bookname: it.bookname || it.bookName || it.name || '',
+          image: it.image || it.img || '',
+          unitPrice: Number(it.unitPrice || it.price || 0),
+          quantity: Number(it.quantity || it.qty || 1),
+          subtotal: Number(it.subtotal || (Number(it.unitPrice || it.price || 0) * Number(it.quantity || it.qty || 1)) || 0)
+        }));
+        return {
+          id: o.id,
+          createdAt: o.createdAt,
+          status: o.status || o.state || 'unknown',
+          statusText: translatePaymentStatus(o.status || o.state || 'unknown'),
+          items: plainItems
+        };
+      });
+      res.status(200).json({ errCode: 0, data: out });
+      return resolve(out);
+    } catch (err) {
+      console.error('getMyOrders error', err);
+      res.status(500).json({ errCode: -1, errMessage: 'Lỗi khi lấy đơn hàng' });
+      return reject(err);
+    }
+  });
+};
+
+// expose getMyOrders alongside createOrder
+module.exports = { createOrder, getMyOrders };
 

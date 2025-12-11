@@ -48,9 +48,16 @@ let createPayment = async (req, res) => {
     const total = Number(body.total || subtotal + shipping + tax);
     const buyer = body.buyer || {};
 
-    // Create order in DB (status pending)
-    const created = await orderService.createOrder({ idempotencyKey, userId, buyer, items, subtotal, shipping, tax, total, paymentMethod: 'paypal', provider: 'paypal' });
-    const order = created.order || created; // handle service result shape
+    const paymentMethod = (body.paymentMethod || 'paypal').toLowerCase();
+
+    // If payment method is paypal, do NOT create the DB order yet.
+    // The DB order will be created after successful capture (or via webhook) to ensure we only save paid orders.
+    let preCreatedOrder = null;
+    if (paymentMethod !== 'paypal') {
+      // create immediately for non-paypal methods (e.g., cod)
+      const created = await orderService.createOrder({ idempotencyKey, userId, buyer, items, subtotal, shipping, tax, total, paymentMethod, provider: paymentMethod });
+      preCreatedOrder = created.order || created;
+    }
 
     // If PayPal credentials available, call PayPal create order API
     const clientId = process.env.PAYPAL_CLIENT_ID;
@@ -98,8 +105,10 @@ let createPayment = async (req, res) => {
         });
         const createJson = await createRes.json();
         const providerPaymentId = createJson.id;
-        // Save providerPaymentId into order metadata (best-effort) BUT DO NOT mark as paid here
-        try { await orderService.saveProviderInfo(order.id, { providerPaymentId, raw: createJson }); } catch(e){ /* don't block response */ }
+        // If we pre-created an order (non-paypal) save provider info there (best-effort)
+        try {
+          if (preCreatedOrder && preCreatedOrder.id) await orderService.saveProviderInfo(preCreatedOrder.id, { providerPaymentId, raw: createJson });
+        } catch(e){ /* don't block response */ }
 
         // find approval link
         const approval = (createJson.links||[]).find(l=>l.rel==='approve');
@@ -111,9 +120,9 @@ let createPayment = async (req, res) => {
     }
 
     // If no PayPal creds or real API failed, return a mock approval URL so frontend can be tested
-    const mockProviderId = 'MOCK-' + order.id;
-    try { await orderService.saveProviderInfo(order.id, { providerPaymentId: mockProviderId, raw: { mock: true } }); } catch(e){ /* ignore */ }
-    const mockUrl = `/mock-paypal-approve?orderId=${order.id}`;
+    const mockProviderId = 'MOCK-' + (preCreatedOrder ? preCreatedOrder.id : ('tmp-' + Date.now()));
+    try { if (preCreatedOrder && preCreatedOrder.id) await orderService.saveProviderInfo(preCreatedOrder.id, { providerPaymentId: mockProviderId, raw: { mock: true } }); } catch(e){ /* ignore */ }
+    const mockUrl = `/mock-paypal-approve?providerId=${mockProviderId}`;
     return res.status(200).json({ errCode: 0, approvalUrl: mockUrl, providerPaymentId: mockProviderId });
   } catch (error) {
     console.error('createPayment error', error);
@@ -159,9 +168,11 @@ let capturePayment = async (req, res) => {
     let order = null;
     if (localOrderId) order = await db.Order.findOne({ where: { id: localOrderId } });
     if (!order && providerPaymentId) order = await db.Order.findOne({ where: { providerPaymentId } });
-    if (!order) return res.status(404).json({ errCode: 1, errMessage: 'Order not found' });
+    // If order not found, we'll attempt to create it after successful capture (so orders are only saved when paid)
+    // but keep a reference to whether we created it here
+    let createdOrder = null;
 
-    if (order.status === 'paid') return res.status(200).json({ errCode: 0, message: 'Order already paid', orderId: order.id });
+    if (order && order.status === 'paid') return res.status(200).json({ errCode: 0, message: 'Order already paid', orderId: order.id });
 
     const clientId = process.env.PAYPAL_CLIENT_ID;
     const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
@@ -195,11 +206,31 @@ let capturePayment = async (req, res) => {
 
     if (captured) {
       try {
+        // if we didn't find order earlier, create it now using purchase unit info
+        if (!order) {
+          // build items from capture response
+          const pu = (capJson.purchase_units || [])[0] || {};
+          const capItems = (pu.items || []).map(it => ({
+            bookname: it.name || it.description || '',
+            image: it.sku || '',
+            unitPrice: Number(it.unit_amount && it.unit_amount.value ? it.unit_amount.value : 0),
+            quantity: Number(it.quantity || 1),
+            subtotal: Number((it.unit_amount && it.unit_amount.value ? it.unit_amount.value : 0) * Number(it.quantity || 1))
+          }));
+          const subtotalCalc = capItems.reduce((s,i)=>s+ (Number(i.subtotal||0)),0);
+          const totalCalc = Number(pu.amount && pu.amount.value ? pu.amount.value : subtotalCalc);
+          const buyerInfo = req.user ? { firstName: req.user.firstName || req.user.name || '', lastName: req.user.lastName || '', email: req.user.email || '' } : {};
+          const created = await orderService.createOrder({ idempotencyKey: null, userId: req.user?.id || null, buyer: buyerInfo, items: capItems, subtotal: subtotalCalc, shipping: 0, tax: 0, total: totalCalc, paymentMethod: 'paypal', provider: 'paypal' });
+          createdOrder = created.order || created;
+          order = createdOrder;
+        }
+
         await orderService.markPaid(order.id, { providerPaymentId: targetOrderId, raw: capJson });
       } catch (e) { console.error('markPaid error', e); }
 
-      const redirectUrl = `/QLTV-ChatboxAi/frontend/index.php?orderId=${order.id}`;
-      return res.status(200).json({ errCode: 0, message: 'Capture successful', capture: capJson, orderId: order.id, redirectUrl });
+      const finalOrderId = order ? order.id : (createdOrder ? createdOrder.id : null);
+      const redirectUrl = `/QLTV-ChatboxAi/frontend/index.php?orderId=${finalOrderId}`;
+      return res.status(200).json({ errCode: 0, message: 'Capture successful', capture: capJson, orderId: finalOrderId, redirectUrl });
     }
 
     return res.status(400).json({ errCode: -1, errMessage: 'Capture did not return completed status', raw: capJson });
