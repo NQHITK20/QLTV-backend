@@ -37,7 +37,9 @@ let notifyOrder = async (req, res) => {
 
     const frontendBase = (process.env.FRONTEND_URL && process.env.FRONTEND_URL.replace(/\/$/, '')) || null;
 
-    const result = await emailService.sendOrderNotification({ toEmail, firstName, lastName, orderId, type, frontendBase });
+    const providerPaymentId = order.providerPaymentId || null;
+    const provider = order.provider || null;
+    const result = await emailService.sendOrderNotification({ toEmail, firstName, lastName, orderId, providerPaymentId, provider, type, frontendBase });
     return res.status(200).json({ errCode: 0, message: 'Notification sent', result });
   } catch (error) {
     console.error('notifyOrder error', error);

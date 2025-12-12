@@ -44,7 +44,7 @@ let createPayment = async (req, res) => {
     const items = Array.isArray(body.items) ? body.items : [];
     const subtotal = Number(body.subtotal || 0);
     const shipping = Number(body.shipping || 0);
-    const tax = Number(body.tax || Math.round(subtotal * 0.05));
+    const tax = Number(body.tax || Math.round(subtotal * 0.1));
     const total = Number(body.total || subtotal + shipping + tax);
     const buyer = body.buyer || {};
 
@@ -57,6 +57,19 @@ let createPayment = async (req, res) => {
       // create immediately for non-paypal methods (e.g., cod)
       const created = await orderService.createOrder({ idempotencyKey, userId, buyer, items, subtotal, shipping, tax, total, paymentMethod, provider: paymentMethod });
       preCreatedOrder = created.order || created;
+    }
+
+    // For non-paypal providers (e.g., COD) ensure we have a providerPaymentId saved so other flows can reference it
+    if (preCreatedOrder && preCreatedOrder.id && !preCreatedOrder.providerPaymentId) {
+      try {
+        const providerPaymentId = (paymentMethod === 'cod') ? `COD-${preCreatedOrder.id}` : `${paymentMethod.toUpperCase()}-${preCreatedOrder.id}`;
+        await orderService.saveProviderInfo(preCreatedOrder.id, { providerPaymentId, raw: { method: paymentMethod } });
+        // reflect it locally
+        preCreatedOrder.providerPaymentId = providerPaymentId;
+      } catch (e) {
+        // don't block payment flow on save failure
+        console.error('saveProviderInfo error for preCreatedOrder', e);
+      }
     }
 
     // If PayPal credentials available, call PayPal create order API

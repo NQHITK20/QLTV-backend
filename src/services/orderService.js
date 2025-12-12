@@ -27,7 +27,7 @@ const createOrder = (payload = {}) => {
           shipping,
           tax,
           total,
-          currency: 'VND',
+          currency: 'USD',
           paymentMethod,
           provider,
           status: paymentMethod === 'cod' ? 'cod_pending' : 'pending',

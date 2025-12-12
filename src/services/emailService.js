@@ -62,7 +62,7 @@ let getBodyHTML = (data) => {
     return result
 }
 
-let sendOrderNotification = async ({ toEmail, firstName, lastName, orderId, type = 'paypal', frontendBase }) => {
+let sendOrderNotification = async ({ toEmail, firstName, lastName, orderId, providerPaymentId = null, provider = null, type = 'paypal', frontendBase }) => {
     return new Promise(async (resolve, reject) => {
         try {
             if (!toEmail) return resolve({ errCode: 2, errMessage: 'Recipient email required' });
@@ -97,10 +97,10 @@ let sendOrderNotification = async ({ toEmail, firstName, lastName, orderId, type
             const ordersUrl = `${base}/orders.php`;
             const orderLink = `${ordersUrl}?orderId=${encodeURIComponent(orderId || '')}`;
 
-            const subject = (type === 'approved') ? `Đơn hàng #${orderId} — Đã được duyệt` : `Thanh toán PayPal thành công — Đơn #${orderId}`;
+            const subject = (type === 'approved') ? `Đơn hàng #${orderId} — Đã được duyệt` : `Thanh toán thành công — Đơn #${orderId}`;
             const recipientName = ((firstName || '') + ' ' + (lastName || '')).trim();
             const greeting = recipientName ? `Kính chào ${recipientName},` : `Kính chào Quý khách,`;
-            const statusLine = (type === 'approved') ? `Đơn hàng <strong>#${orderId}</strong> của bạn đã được <strong>duyệt</strong>.` : `Chúng tôi xác nhận thanh toán PayPal cho đơn hàng <strong>#${orderId}</strong> đã <strong>thành công</strong>.`;
+            const statusLine = (type === 'approved') ? `Đơn hàng <strong>#${orderId}</strong> của bạn đã được <strong>duyệt</strong>.` : `Chúng tôi xác nhận thanh toán cho đơn hàng <strong>#${orderId}</strong> đã <strong>thành công</strong>.`;
             const imgSrc = hasLocalLogo ? 'cid:site-logo' : logoUrl;
                 const html = `
                     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; color:#333; max-width:640px; margin:0 auto;">
@@ -112,7 +112,7 @@ let sendOrderNotification = async ({ toEmail, firstName, lastName, orderId, type
                             <p style="margin:0 0 20px; font-size:15px; line-height:1.5;">${statusLine}</p>
 
                             <div style="padding:12px; background:#f7f9fc; border-radius:6px; margin-bottom:20px;">
-                                <p style="margin:0; font-size:14px;color:#333">Mã đơn hàng: <strong>#${orderId}</strong></p>
+                                ${providerPaymentId ? `<p style="margin:4px 0 0; font-size:13px;color:#666">Mã giao dịch: <strong>${providerPaymentId}</strong>${provider ? ` <small style="color:#999">(${provider.toUpperCase()})</small>` : ''}</p>` : ''}
                                 <p style="margin:4px 0 0; font-size:13px;color:#666">Ngày: ${new Date().toLocaleString('vi-VN')}</p>
                             </div>
 
@@ -129,7 +129,7 @@ let sendOrderNotification = async ({ toEmail, firstName, lastName, orderId, type
                 `;
 
                 // plain-text fallback
-                const text = `${recipientName ? 'Kính chào ' + recipientName + ',' : 'Kính chào,'}\n\n${type === 'approved' ? `Đơn hàng #${orderId} của bạn đã được duyệt.` : `Thanh toán PayPal cho đơn hàng #${orderId} đã thành công.`}\n\nXem chi tiết: ${orderLink}\n\nNếu cần trợ giúp liên hệ: ${process.env.SUPPORT_EMAIL || process.env.EMAIL_APP || 'support@example.com'}\n\nTrân trọng,\nĐội ngũ Web-app Quản lý thư viện`;
+                const text = `${recipientName ? 'Kính chào ' + recipientName + ',' : 'Kính chào,'}\n\n${type === 'approved' ? `Đơn hàng #${orderId} của bạn đã được duyệt.` : `Thanh toán cho đơn hàng #${orderId} đã thành công.`}${providerPaymentId ? `\nMã giao dịch: ${providerPaymentId}${provider ? ` (${provider.toUpperCase()})` : ''}` : ''}\n\nXem chi tiết: ${orderLink}\n\nNếu cần trợ giúp liên hệ: ${process.env.SUPPORT_EMAIL || process.env.EMAIL_APP || 'support@example.com'}\n\nTrân trọng,\nĐội ngũ Web-app Quản lý thư viện`;
 
             const mailOptions = {
                 from: '"Web-app Quản lý thư viện" <' + (process.env.EMAIL_APP || 'no-reply@example.com') + '>',

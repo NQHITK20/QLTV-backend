@@ -306,16 +306,10 @@ let getCount = () => {
             let countBook = await db.Book.count()
             let countCategory = await db.Category.count()
             let countNews = await db.News.count()
-            if (countUser) {
-                resolve({
-                    countUser,countBook,countCategory,countNews
-                })
-            } else {
-                resolve({
-                    errCode:1,
-                    errMessage:"Lỗi sever"
-                })
-            }
+            let countOrder = await db.Order.count()
+            resolve({
+                countUser, countBook, countCategory, countNews, countOrder
+            })
         } catch (e) {
             reject(e);
         }

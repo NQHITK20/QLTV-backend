@@ -9,7 +9,7 @@ module.exports = {
       shipping: { type: Sequelize.DECIMAL(12,2), defaultValue: 0 },
       tax: { type: Sequelize.DECIMAL(12,2), defaultValue: 0 },
       total: { type: Sequelize.DECIMAL(12,2), defaultValue: 0 },
-      currency: { type: Sequelize.STRING, defaultValue: 'VND' },
+      currency: { type: Sequelize.STRING, defaultValue: 'USD' },
       paymentMethod: { type: Sequelize.STRING },
       provider: { type: Sequelize.STRING },
       providerPaymentId: { type: Sequelize.STRING },

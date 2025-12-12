@@ -67,6 +67,8 @@ let initWebRoute = (app) => {
         // Orders
         Router.post('/api/orders/create', checkAuth, orderController.createOrder);
         Router.post('/api/orders/get-order', checkAuth, orderController.getMyOrders);
+        // Admin list: lightweight orders for admin UI (customer, orderCode, createdAt, total, status)
+        Router.post('/api/orders/admin-list', checkAuth, orderController.getAdminOrders);
         
 
         // Payments
