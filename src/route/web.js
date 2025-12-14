@@ -69,6 +69,9 @@ let initWebRoute = (app) => {
         Router.post('/api/orders/get-order', checkAuth, orderController.getMyOrders);
         // Admin list: lightweight orders for admin UI (customer, orderCode, createdAt, total, status)
         Router.post('/api/orders/admin-list', checkAuth, orderController.getAdminOrders);
+        Router.post('/api/orders/get-by-id', checkAuth, orderController.getOrderById);
+        // Approve / mark COD order as paid (admin only)
+        Router.post('/api/orders/approve', checkAuth, orderController.approveOrder);
         
 
         // Payments

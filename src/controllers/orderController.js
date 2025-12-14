@@ -70,7 +70,7 @@ let getMyOrders = (req, res) => {
     try {
       const authUserId = req.user?.id;
       const requestedUserId = req.body?.userId || req.query?.userId;
-      const isAdmin = req.user && (req.user.role === "3" || req.user.role === 3);
+      const isAdmin = req.user;
 
       // Nếu là admin và không yêu cầu userId cụ thể, trả về tất cả đơn
       const userId = (!isAdmin) ? (authUserId || requestedUserId) : (requestedUserId || null);
@@ -187,7 +187,7 @@ let getAdminOrders = (req, res) => {
 
         return {
           id: o.id,
-          orderCode: o.providerPaymentId || `ORD-${o.id}`,
+          orderCode: o.providerPaymentId || (o.paymentMethod === 'cod' ? `COD-${o.id}` : `ORD-${o.id}`),
           customer,
           createdAt: o.createdAt,
           total: Number(o.total || 0),
@@ -205,5 +205,96 @@ let getAdminOrders = (req, res) => {
   });
 };
 
-module.exports = { createOrder, getMyOrders, getAdminOrders };
+// exports are declared at end of file (including getOrderById)
+
+let getOrderById = (req, res) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const id = req.body?.id || req.query?.id || req.params?.id;
+      if (!id) {
+        res.status(400).json({ errCode: 1, errMessage: 'Thiếu id đơn hàng' });
+        return resolve(null);
+      }
+
+      const orderInstance = await db.Order.findOne({ where: { id }, include: [{ model: db.OrderItem, as: 'items' }], raw: false });
+      if (!orderInstance) {
+        res.status(404).json({ errCode: 1, errMessage: 'Không tìm thấy đơn hàng' });
+        return resolve(null);
+      }
+
+      const o = (typeof orderInstance.get === 'function') ? orderInstance.get({ plain: true }) : orderInstance;
+
+      const items = (o.items || []).map(it => ({
+        id: it.id,
+        bookId: it.bookId || null,
+        bookname: it.bookname || it.bookName || it.name || '',
+        image: it.image || it.img || '',
+        unitPrice: Number(it.unitPrice || it.price || 0),
+        quantity: Number(it.quantity || it.qty || 1),
+        subtotal: Number(it.subtotal || ((Number(it.unitPrice || it.price || 0)) * Number(it.quantity || it.qty || 1)))
+      }));
+
+      // determine customer name
+      let customer = '-';
+      try {
+        if (o.buyer && (o.buyer.firstName || o.buyer.lastName)) {
+          customer = ((o.buyer.firstName || '') + ' ' + (o.buyer.lastName || '')).trim() || '-';
+        } else if (o.userId) {
+          const user = await db.User.findOne({ where: { id: o.userId }, attributes: ['firstName','lastName'], raw: true });
+          if (user) customer = ((user.firstName||'') + ' ' + (user.lastName||'')).trim() || '-';
+        }
+      } catch (e) { }
+
+      const out = {
+        id: o.id,
+        orderCode: o.providerPaymentId || (o.paymentMethod === 'cod' ? `COD-${o.id}` : `ORD-${o.id}`),
+        createdAt: o.createdAt,
+        status: o.status || 'pending',
+        statusText: translatePaymentStatus(o.status || 'pending'),
+        total: Number(o.total || 0),
+        buyer: o.buyer || null,
+        customer,
+        items
+      };
+
+      res.status(200).json({ errCode: 0, data: out });
+      return resolve(out);
+    } catch (err) {
+      console.error('getOrderById error', err);
+      res.status(500).json({ errCode: -1, errMessage: 'Lỗi khi lấy đơn hàng' });
+      return reject(err);
+    }
+  });
+};
+
+let approveOrder = (req, res) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const body = req.body || {};
+      const orderId = body.id || body.orderId || null;
+      const providerPaymentId = body.providerPaymentId || body.providerId || null;
+
+      if (!orderId) {
+        res.status(400).json({ errCode: 1, errMessage: 'Thiếu id đơn hàng' });
+        return resolve(null);
+      }
+
+      // Call service to mark paid
+      try {
+        const result = await orderService.markPaid(orderId, { providerPaymentId, raw: { approvedBy: req.user?.id, approvedAt: new Date().toISOString() } });
+        return res.status(200).json({ errCode: 0, message: 'Đã duyệt đơn', data: result && result.order ? result.order : null });
+      } catch (e) {
+        console.error('approveOrder markPaid error', e);
+        res.status(500).json({ errCode: -1, errMessage: 'Lỗi khi duyệt đơn' });
+        return resolve(null);
+      }
+    } catch (err) {
+      console.error('approveOrder error', err);
+      res.status(500).json({ errCode: -1, errMessage: 'Lỗi khi duyệt đơn' });
+      return reject(err);
+    }
+  });
+};
+
+module.exports = { createOrder, getMyOrders, getAdminOrders, getOrderById, approveOrder };
 
