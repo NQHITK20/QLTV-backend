@@ -1,4 +1,5 @@
 const db = require('../models');
+const { translatePaymentStatus } = require('../utils/paymentStatus');
 
 /**
  * Create an order + order items atomically. Supports idempotencyKey.
@@ -57,6 +58,8 @@ const createOrder = (payload = {}) => {
           await transaction.commit();
           // convert instance to plain object for callers
           const outOrder = (created && typeof created.get === 'function') ? created.get({ plain: true }) : created;
+          // Attach translated status text for frontend convenience
+          outOrder.statusText = translatePaymentStatus(outOrder.status || outOrder.state || 'unknown');
           return resolve({ existing: false, order: outOrder });
       } catch (err) {
         try { if (transaction && !transaction.finished) await transaction.rollback(); } catch(e) { /* ignore rollback errors */ }
@@ -78,12 +81,28 @@ const markPaid = (orderId, providerInfo = {}) => {
     try {
       const order = await db.Order.findOne({ where: { id: orderId }, transaction, raw: false });
       if (!order) throw new Error('Order not found');
-      order.status = 'paid';
+      // If this is a COD order, mark it as COD success/approved instead of generic 'paid'
+      try {
+        // paymentMethod stores the method (e.g. 'cod', 'card').
+        // status may already be 'cod_pending' for COD flows.
+        const pm = (order.paymentMethod || '').toString().toLowerCase();
+        const st = (order.status || '').toString().toLowerCase();
+        // If the order was created as a COD order (paymentMethod === 'cod')
+        // or its current status is 'cod_pending', mark it as COD success.
+        if (pm === 'cod' || st === 'cod_pending') {
+          order.status = 'cod_success';
+        } else {
+          order.status = 'paid';
+        }
+      } catch (e) {
+        order.status = 'paid';
+      }
       order.providerPaymentId = providerInfo.providerPaymentId || order.providerPaymentId;
       order.metadata = Object.assign({}, order.metadata || {}, providerInfo.raw || {});
       await order.save({ transaction });
       await transaction.commit();
         const outOrder = (order && typeof order.get === 'function') ? order.get({ plain: true }) : order;
+        outOrder.statusText = translatePaymentStatus(outOrder.status || outOrder.state || 'unknown');
         return resolve({ errCode: 0, order: outOrder });
     } catch (err) {
       try { if (transaction && !transaction.finished) await transaction.rollback(); } catch(e) { /* ignore rollback errors */ }
@@ -92,7 +111,7 @@ const markPaid = (orderId, providerInfo = {}) => {
   });
 };
 
-module.exports = { createOrder, markPaid };
+// exported below together with `saveProviderInfo`
 
 /**
  * Save provider information (providerPaymentId and raw metadata) without changing order status.
@@ -109,6 +128,7 @@ const saveProviderInfo = (orderId, providerInfo = {}) => {
       await order.save({ transaction });
       await transaction.commit();
         const outOrder = (order && typeof order.get === 'function') ? order.get({ plain: true }) : order;
+        outOrder.statusText = translatePaymentStatus(outOrder.status || outOrder.state || 'unknown');
         return resolve({ errCode: 0, order: outOrder });
     } catch (err) {
       try { if (transaction && !transaction.finished) await transaction.rollback(); } catch(e) { /* ignore rollback errors */ }

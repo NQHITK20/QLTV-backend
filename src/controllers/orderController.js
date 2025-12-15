@@ -192,6 +192,7 @@ let getAdminOrders = (req, res) => {
           createdAt: o.createdAt,
           total: Number(o.total || 0),
           status: o.status || 'pending',
+          statusText: translatePaymentStatus(o.status || 'pending')
         };
       });
 
