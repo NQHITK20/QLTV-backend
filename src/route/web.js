@@ -8,6 +8,7 @@ import userCartController from "../controllers/userCartController";
 import orderController from "../controllers/orderController";
 import paymentController from "../controllers/paymentController";
 import notificationController from "../controllers/notificationController";
+import statisticsController from "../controllers/statisticsController";
 import checkAuth from "../middleware/checkAuth";
 
 let Router = express.Router();
@@ -82,6 +83,8 @@ let initWebRoute = (app) => {
 
         // Notifications (send order notification email)
         Router.post('/api/notify/order', checkAuth, notificationController.notifyOrder);
+        // Revenue statistics
+        Router.post('/api/statistics/revenue', checkAuth, statisticsController.revenue);
         
 
 
