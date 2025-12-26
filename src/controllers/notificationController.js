@@ -47,4 +47,26 @@ let notifyOrder = async (req, res) => {
   }
 };
 
-export default { notifyOrder };
+const feedbackController = async (req, res) => {
+    try {
+        const { firstName, lastName, email, subject, comment } = req.body;
+
+        const result = await  emailService.sendFeedback({
+            firstName,
+            lastName,
+            email,
+            subject,
+            comment
+        });
+
+        return res.status(200).json(result);
+    } catch (error) {
+        return res.status(500).json({
+            errCode: -1,
+            message: 'Lỗi server, gửi email thất bại 🥲',
+            error: error.message
+        });
+    }
+};
+
+export default { notifyOrder, feedbackController };

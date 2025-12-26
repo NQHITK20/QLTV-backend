@@ -154,8 +154,99 @@ let sendOrderNotification = async ({ toEmail, firstName, lastName, orderId, prov
     });
 }
 
+let sendFeedback = async ({ firstName, lastName, email, subject, comment }) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const transporter = nodemailer.createTransport({
+                host: "smtp.gmail.com",
+                port: 465,
+                secure: true,
+                auth: {
+                    user: process.env.EMAIL_APP,
+                    pass: process.env.EMAIL_APP_PASSWORD,
+                },
+            });
+
+            const base = (process.env.FRONTEND_URL && process.env.FRONTEND_URL.replace(/\/$/, '')) || `http://localhost/QLTV-ChatboxAi/frontend`;
+            const logoUrl = `${base}/images/logo.png`;
+            const projectRoot = path.resolve(__dirname, '..', '..', '..');
+            const candidatePaths = [
+                path.join(projectRoot, 'frontend', 'admin-ui', 'images', 'logo.png'),
+                path.join(projectRoot, 'frontend', 'images', 'logo.png'),
+                path.join(projectRoot, 'frontend', 'images', 'logo-02.png'),
+                path.join(projectRoot, 'frontend', 'admin-ui', 'images', 'logo-02.png'),
+                path.join(projectRoot, 'frontend', 'images', 'flogo.png')
+            ];
+            let localLogoPath = null;
+            for (const p of candidatePaths) {
+                if (fs.existsSync(p)) { localLogoPath = p; break; }
+            }
+            const hasLocalLogo = !!localLogoPath;
+            const imgSrc = hasLocalLogo ? 'cid:site-logo' : logoUrl;
+
+            const displayName = ((firstName || '') + ' ' + (lastName || '')).trim() || 'Người dùng ẩn danh';
+
+            const html = `
+                <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; color:#333; max-width:640px; margin:0 auto;">
+                    <div style="padding:20px 0; text-align:left;">
+                        <img src="${imgSrc}" alt="Logo" style="max-height:64px;">
+                    </div>
+                    <div style="background:#ffffff; border:1px solid #e6e9ee; border-radius:8px; padding:24px; box-shadow:0 1px 3px rgba(16,24,40,0.05);">
+                        <h2 style="margin:0 0 16px; font-size:18px;">Ý kiến người dùng mới</h2>
+                        <p style="margin:0 0 12px; font-size:14px; line-height:1.5;">Bạn vừa nhận được một phản hồi mới từ form liên hệ trên website.</p>
+
+                        <div style="padding:12px; background:#f7f9fc; border-radius:6px; margin-bottom:16px; font-size:14px;">
+                            <p style="margin:4px 0;"><strong>Họ &amp; tên:</strong> ${displayName}</p>
+                            <p style="margin:4px 0;"><strong>Email:</strong> ${email || '(không cung cấp)'}</p>
+                            <p style="margin:4px 0;"><strong>Chủ đề:</strong> ${subject || '(Không có tiêu đề)'}</p>
+                        </div>
+
+                        <div style="margin-bottom:16px; font-size:14px;">
+                            <p style="margin:0 0 6px;"><strong>Nội dung:</strong></p>
+                            <div style="background:#f9fafb; border-radius:6px; padding:12px; white-space:pre-wrap; line-height:1.5;">${comment || '(Không có nội dung)'}</div>
+                        </div>
+
+                        <p style="color:#6b7280; font-size:12px; line-height:1.5; margin:0;">Bạn có thể trả lời trực tiếp email này để phản hồi lại cho người dùng.</p>
+                        <div style="height:1px; background:#eef2f7; margin:20px 0;"></div>
+                        <p style="margin:0; font-size:13px; color:#374151;">Trân trọng,<br><strong>Hệ thống Web-app Quản lý thư viện</strong></p>
+                    </div>
+                    <p style="text-align:center; color:#9ca3af; font-size:11px; margin-top:12px;">Email được gửi tự động từ form liên hệ. Vui lòng không chia sẻ email này ra bên ngoài nếu có thông tin nhạy cảm.</p>
+                </div>
+            `;
+
+            const text = `Ý kiến người dùng mới\n\n` +
+                `Họ & tên: ${displayName}\n` +
+                `Email: ${email || '(không cung cấp)'}\n` +
+                `Chủ đề: ${subject || '(Không có tiêu đề)'}\n\n` +
+                `Nội dung:\n${comment || '(Không có nội dung)'}\n\n` +
+                `--\nWeb-app Quản lý thư viện`;
+
+            const mailOptions = {
+                from: '"Web-app Quản lý thư viện" <' + (process.env.EMAIL_APP || 'no-reply@example.com') + '>',
+                to: process.env.EMAIL_APP,
+                subject: `Ý kiến từ ${displayName}: ${subject || ''}`.trim(),
+                html,
+                text,
+                replyTo: email || undefined,
+            };
+
+            if (hasLocalLogo) {
+                try { console.debug('emailService: using local logo at', localLogoPath); } catch (e) {}
+                mailOptions.attachments = [{ filename: path.basename(localLogoPath), path: localLogoPath, cid: 'site-logo' }];
+            }
+
+            const info = await transporter.sendMail(mailOptions);
+
+            resolve({ errCode: 0, message: 'Đã gửi ý kiến thành công', info });
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+
 module.exports = {
     sendResetEmail,
     getBodyHTML,
-    sendOrderNotification
+    sendOrderNotification,
+    sendFeedback
 }

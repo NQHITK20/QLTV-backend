@@ -85,8 +85,8 @@ let initWebRoute = (app) => {
         Router.post('/api/notify/order', checkAuth, notificationController.notifyOrder);
         // Revenue statistics
         Router.post('/api/statistics/revenue', checkAuth, statisticsController.revenue);
-        
-
+        // Feedback
+        Router.post('/api/feedback', notificationController.feedbackController);
 
     return app.use("/", Router);
 };
